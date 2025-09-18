@@ -1,5 +1,8 @@
 <template>
   <div class="editor-container">
+    <div class="file-content">
+      <FileTree :nodes="treeData" />
+    </div>
     <div class="editor-split">
       <!-- 左侧代码编辑区 -->
       <div ref="editorDom" class="code-editor"></div>
@@ -11,7 +14,9 @@
 import { ref, watch, onMounted, onBeforeUnmount, onActivated } from "vue";
 import beautify from "js-beautify";
 import * as monaco from "monaco-editor";
-// import 'monaco-languages/release/esm/monaco-languages.js'
+import FileTree from "@/components/FileTree.vue";
+
+const treeData = ref([]);
 
 // Props 定义
 const props = defineProps({
@@ -96,6 +101,50 @@ watch(
     }
   }
 );
+// 点击按钮选择文件夹
+const selectFolder = () => {
+  const input = document.createElement("input");
+  input.type = "file";
+  input.webkitdirectory = true;
+  input.onchange = (e) => {
+    const files = Array.from(e.target.files); // FileList -> Array
+    const tree = buildTreeStructure(files); // ✅ 使用推荐的方法构建树
+    treeData.value = tree;
+  };
+  input.click();
+};
+
+function buildTreeStructure(files) {
+  const root = { name: "root", children: [] };
+
+  files.forEach((file) => {
+    const pathParts = file.webkitRelativePath.split("/");
+    let current = root;
+
+    pathParts.forEach((part, index) => {
+      const isLast = index === pathParts.length - 1;
+      const existing = current.children?.find((child) => child.name === part);
+
+      if (!existing) {
+        const newNode = {
+          name: part,
+          path: pathParts.slice(0, index + 1).join("/"),
+          isDirectory: !isLast,
+          file: isLast ? file : null,
+          children: isLast ? undefined : [],
+        };
+
+        if (!current.children) current.children = [];
+        current.children.push(newNode);
+        current = newNode;
+      } else {
+        current = existing;
+      }
+    });
+  });
+
+  return root.children; // 最终树，从根的子节点开始
+}
 
 // 组件挂载后初始化 Monaco Editor
 onMounted(() => {
@@ -300,135 +349,29 @@ defineExpose({
 
 <style lang="scss" scoped>
 .editor-container {
-  width: 100%;
-  height: 100%;
+  width: 100vw;
+  height: 100vh;
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   border: 1px solid #e0e0e0;
   border-radius: 4px;
-  overflow: hidden;
 }
 
-.editor-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 10px;
-  background-color: #f5f5f5;
-  border-bottom: 1px solid #e0e0e0;
-
-  h3 {
-    margin: 0;
-    font-size: 20px;
-    font-weight: 600;
-    color: #333;
-  }
-}
-
-.run-button {
-  background-color: #42b983;
-  color: white;
-  border: none;
-  padding: 10px;
-  border-radius: 4px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  transition: background-color 0.2s;
-
-  &:hover {
-    background-color: #359e75;
-  }
-
-  &:disabled {
-    background-color: #cccccc;
-    cursor: not-allowed;
-  }
+.file-content {
+  height: 100vh;
+  width: 25vw;
+  border: 1px solid red;
 }
 
 .editor-split {
-  display: flex;
-  flex: 1;
-  width: 100%;
-  height: 0; /* 让flex决定高度 */
-  min-height: 0;
+  border: 1px solid blue;
+  height: 100vh;
+  width: 70vw;
 }
 
 .code-editor {
-  flex: 1;
-  border-right: 1px solid #e0e0e0;
-}
-
-.result-panel {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  background-color: #fafafa;
-}
-
-.result-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 10px;
-  border-bottom: 1px solid #e0e0e0;
-}
-
-.clear-button {
-  background-color: transparent;
-  color: #666;
-  border: 1px solid #ddd;
-  padding: 10px;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: all 0.2s;
-
-  &:hover {
-    background-color: #f0f0f0;
-  }
-
-  &:disabled {
-    color: #ccc;
-    cursor: not-allowed;
-  }
-}
-
-.result-content {
-  flex: 1;
-  padding: 10px;
-  overflow: auto;
-  position: relative;
-  /* 关键：允许文本选择 */
-  user-select: text !important;
-  -webkit-user-select: text !important; /* 兼容 Safari */
-  -moz-user-select: text !important; /* 兼容 Firefox */
-}
-
-.output {
-  margin: 0;
-  white-space: pre-wrap;
-  word-wrap: break-word;
-  font-family: monospace;
-  font-size: 14px;
-  line-height: 1.5;
-  color: #333;
-  /* 确保文本可选中 */
-  user-select: text !important;
-  -webkit-user-select: text !important;
-}
-
-.empty-result {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  color: #999;
-  font-style: italic;
-}
-
-// 图标样式
-.icon-run::before {
-  content: "▶";
+  border: 1px solid blue;
+  height: 100vh;
+  width: 70vw;
 }
 </style>
