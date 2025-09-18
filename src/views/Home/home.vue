@@ -28,7 +28,10 @@ import { ref, onMounted, onUnmounted } from "vue";
 
 const jsonComponents = ref(null);
 // const strJson = ref("");
-const strJson = ref("# Python 示例代码\nprint('Hello Python!')\nresult = 1 + 2\nprint('计算结果：', result)");
+const strJson = ref(
+  "# Python 示例代码\nprint('Hello Python!')\nresult = 1 + 2\nprint('计算结果：', result)"
+);
+
 //更改返回json数据
 const handleChangeResponseJson = () => {
   // 返回内容值，根据业务增加后面的逻辑

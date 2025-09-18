@@ -35,7 +35,9 @@ import "vue3-tree-vue/dist/style.css"; // ✅ 正确的官方样式文件
 
 // 📌 不再使用 TypeScript，items 就是一个普通数组
 const items = ref([]); // 直接是数组，里面是对象，每个对象包含 text, type, children...
-
+// 新增：保存选中的文件信息和内容
+const selectedFileName = ref("");
+const selectedFileContent = ref("");
 // 构建树：将 File 对象数组转成树形结构
 const buildTreeStructure = (files) => {
   const root = { name: "root", children: [] };
@@ -98,14 +100,40 @@ const selectFolder = () => {
   input.click();
 };
 
+const onItemSelected = (item) => {
+  // 判断选中的是文件（非文件夹且有 File 对象）
+  if (item.type === "file" && item.file) {
+    selectedFileName.value = item.name; // 保存文件名
+    const file = item.file; // 获取原始 File 对象
+
+    // 用 FileReader 读取文件内容
+    const reader = new FileReader();
+    // 读取文本内容（适用于代码、文本文件）
+    reader.readAsText(file);
+
+    // 读取成功后更新内容
+    reader.onload = (event) => {
+      selectedFileContent.value = event.target.result;
+      console.log(selectedFileContent.value)
+    };
+
+    // 读取失败处理
+    reader.onerror = () => {
+      selectedFileContent.value = `无法读取文件：${reader.error.message}`;
+    };
+  } else {
+    // 选中的是文件夹，清空内容
+    selectedFileName.value = "";
+    selectedFileContent.value = "";
+  }
+};
+
 // 以下事件监听器你可以按需使用，目前只是占位打印
 const onItemChecked = (checkedItems) => {
   console.log("Checked:", checkedItems);
 };
 
-const onItemSelected = (item) => {
-  console.log("Selected:", item);
-};
+ 
 
 const onBeforeItemDropped = (droppedItem, destinationNode) => {
   return new Promise((resolve) => {
