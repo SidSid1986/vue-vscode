@@ -2,7 +2,7 @@
  * @Author: Sid Li
  * @Date: 2025-09-18 11:07:27
  * @LastEditors: Sid Li
- * @LastEditTime: 2025-09-19 10:19:51
+ * @LastEditTime: 2025-09-19 16:11:21
  * @FilePath: \vue-vscode-git\src\views\Home\home.vue
  * @Description: 
 -->
@@ -13,11 +13,11 @@
     </div>
 
     <div class="code-content">
-      <!-- <MonacoCom
+      <MonacoCom
         ref="jsonComponents"
         :model-value="strJson"
         @update:model-value="handleChangeResponseJson"
-      /> -->
+      />
 
       <Terminal />
     </div>
