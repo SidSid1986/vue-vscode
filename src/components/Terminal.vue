@@ -5,53 +5,142 @@
 </template>
 
 <script setup>
-import { onMounted, ref, onUnmounted } from 'vue';
-import { Terminal } from 'xterm';
-import { FitAddon } from 'xterm-addon-fit';
-import 'xterm/css/xterm.css'; // 引入默认样式
+import { onMounted, ref, onUnmounted, getCurrentInstance } from "vue";
+import { Terminal } from "xterm";
+import { FitAddon } from "xterm-addon-fit";
+import "xterm/css/xterm.css";
+
+const instance = getCurrentInstance();
+const $ws = instance.appContext.config.globalProperties.$XPack_WebSocket;
 
 const terminalRef = ref(null);
 let terminal = null;
 const fitAddon = new FitAddon();
+let inputBuffer = "";
+let isWsConnected = false;
+let isCommandSent = false; // 标记命令是否已发送（用于控制换行）
+
+const promptPrefix = "DELL@DESKTOP-V48IIM0F MINGW64";
+const currentPath = ref("/d/sid/vue-vscode-git (main)");
 
 onMounted(() => {
-  // 初始化终端
-  terminal = new Terminal({
-    fontSize: 14,
-    fontFamily: 'Consolas, Monaco, monospace',
-    cursorBlink: true, // 光标闪烁
-    theme: {
-      background: '#1e1e1e', // 终端背景（类似VS Code深色主题）
-      foreground: '#d4d4d4',
-      cursor: '#ffffff'
-    }
-  });
-
-  // 加载插件并挂载到DOM
-  terminal.loadAddon(fitAddon);
-  terminal.open(terminalRef.value);
-  fitAddon.fit(); // 自适应容器尺寸
-
-  // 初始欢迎信息
-  terminal.writeln('Welcome to the terminal!\r\n');
-
-  // 监听用户输入（前端模拟，实际需对接后端）
-  terminal.onData((data) => {
-    // 示例：回显输入内容（实际应发送到后端执行命令）
-    if (data === '\r') { // 回车
-      terminal.writeln('\r\n$ '); // 模拟命令提示符
-    } else {
-      terminal.write(data); // 实时回显输入
-    }
-  });
+  initTerminal();
+  initWs();
 });
 
 onUnmounted(() => {
-  // 销毁终端实例
-  if (terminal) {
-    terminal.dispose();
+  if (terminal) terminal.dispose();
+  if ($ws && isWsConnected) {
+    $ws.Close();
+    isWsConnected = false;
   }
 });
+
+const initTerminal = () => {
+  terminal = new Terminal({
+    fontSize: 14,
+    fontFamily: "Consolas, Monaco, monospace",
+    cursorBlink: true,
+    theme: { background: "#1e1e1e", foreground: "#d4d4d4", cursor: "#ffffff" },
+    unicodeActive: true,
+  });
+  terminal.loadAddon(fitAddon);
+  terminal.open(terminalRef.value);
+  fitAddon.fit();
+  showPathLine();
+  showPromptLine();
+
+  terminal.onData((data) => {
+    const keyCode = data.charCodeAt(0);
+
+    // 处理退格键
+    if (keyCode === 127) {
+      if (inputBuffer.length > 0) {
+        inputBuffer = inputBuffer.slice(0, -1);
+        clearCurrentLine();
+        terminal.write(`$ ${inputBuffer}`);
+      }
+      return;
+    }
+
+    // 处理回车键
+    if (data === "\r") {
+      const command = inputBuffer.trim();
+      if (command && isWsConnected) {
+        // 关键：输入命令后先换行，与结果分离
+        terminal.writeln(""); 
+        isCommandSent = true; // 标记命令已发送，等待结果
+        $ws.Send({
+          eventFlag: "terminalCommand",
+          data: command,
+        });
+      } else if (!command) {
+        terminal.writeln("");
+        showPathLine();
+        showPromptLine();
+      }
+      inputBuffer = "";
+      return;
+    }
+
+    // 处理可打印字符
+    if (isPrintable(data)) {
+      inputBuffer += data;
+      clearCurrentLine();
+      terminal.write(`$ ${inputBuffer}`);
+    }
+  });
+};
+
+const showPathLine = () => {
+  terminal.writeln(`${promptPrefix} ${currentPath.value}`);
+};
+
+const showPromptLine = () => {
+  terminal.write(`$ `);
+};
+
+const initWs = () => {
+  $ws
+    .init("")
+    .then((code) => {
+      if (code === 200) {
+        isWsConnected = true;
+        terminal.writeln("✅ 终端WS连接成功");
+        showPathLine();
+        showPromptLine();
+        $ws.EventAdd("terminalResult", (result) => {
+          // 关键：如果命令已发送，先换行再显示结果
+          if (isCommandSent) {
+            terminal.writeln(result); // 结果单独换行
+            isCommandSent = false; // 重置标记
+          } else {
+            terminal.write(result);
+          }
+          showPathLine();
+          showPromptLine();
+        });
+        $ws.EventAdd("connectionClose", () => {
+          isWsConnected = false;
+          terminal.writeln("\r\n❌ 终端WS连接已断开");
+        });
+      }
+    })
+    .catch((error) => {
+      terminal.writeln(`\r\n❌ 终端WS连接失败：${error.message}`);
+      console.error("WS初始化错误详情：", error);
+    });
+};
+
+const clearCurrentLine = () => {
+  terminal.write("\x1b[2K");
+  terminal.write("\x1b[0G");
+};
+
+const isPrintable = (data) => {
+  const code = data.charCodeAt(0);
+  return (code >= 32 && code <= 126) || code > 127;
+};
 </script>
 
 <style scoped>
@@ -62,7 +151,6 @@ onUnmounted(() => {
   border-radius: 4px;
   overflow: hidden;
 }
-
 .terminal {
   width: 100%;
   height: 100%;

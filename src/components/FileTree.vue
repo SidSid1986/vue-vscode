@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="file-tree">
     <button @click="selectFolder">选择文件夹</button>
 
     <div v-if="items.length > 0">
@@ -12,7 +12,7 @@
         @onExpand="onItemExpanded"
         @dropValidator="onBeforeItemDropped"
       >
-        <!-- 👇 用 FileIcon 组件渲染图标 -->
+        <!--   用 FileIcon 组件渲染图标 -->
         <template v-slot:item-prepend-icon="treeItem">
           <FileIcon
             :fileName="treeItem.name || 'default_file'"
@@ -33,9 +33,11 @@ import FileIcon from "@/components/FileIcon.vue"; // 导入自定义图标组件
 import Vue3TreeVue from "vue3-tree-vue";
 import "vue3-tree-vue/dist/style.css"; // ✅ 正确的官方样式文件
 
-// 📌 不再使用 TypeScript，items 就是一个普通数组
+// 不再使用 TypeScript，items 就是一个普通数组
 const items = ref([]); // 直接是数组，里面是对象，每个对象包含 text, type, children...
 // 新增：保存选中的文件信息和内容
+
+const emits = defineEmits(["fileSelected"]);
 const selectedFileName = ref("");
 const selectedFileContent = ref("");
 // 构建树：将 File 对象数组转成树形结构
@@ -51,8 +53,9 @@ const buildTreeStructure = (files) => {
       const existing = current.children?.find((child) => child.name === part);
 
       if (!existing) {
-        // 👇 提取文件扩展名（例如 "test.js" → "js"，文件夹为 ""）
         const ext = isLast ? part.split(".").pop().toLowerCase() : "";
+        // 关键：判断是否为第一层节点（root的直接子节点）
+        const isFirstLevel = current.name === "root";
 
         const newNode = {
           name: part,
@@ -60,9 +63,10 @@ const buildTreeStructure = (files) => {
           isDirectory: !isLast,
           file: isLast ? file : null,
           type: !isLast ? "folder" : "file",
-          ext: ext, // ✅ 新增：存储文件扩展名，用于匹配图标
+          ext: ext,
           children: isLast ? undefined : [],
-          expanded: !isLast ? true : false, // 保持默认展开第一层
+          // 仅第一层文件夹默认展开，其他层级默认收起
+          expanded: isFirstLevel && !isLast ? true : false,
         };
         current.children?.push(newNode);
         current = newNode;
@@ -72,19 +76,8 @@ const buildTreeStructure = (files) => {
     });
   });
 
-  // 👇 核心修改：给第一层节点（root的直接子节点）设置 expanded: true
-  if (root.children && root.children.length > 0) {
-    root.children.forEach((firstLevelNode) => {
-      // 只给文件夹节点设置展开（文件节点无children，展开无意义）
-      if (firstLevelNode.type === "folder") {
-        firstLevelNode.expanded = true;
-      }
-    });
-  }
-
   return root.children || [];
 };
-
 const selectFolder = () => {
   const input = document.createElement("input");
   input.type = "file";
@@ -100,6 +93,7 @@ const selectFolder = () => {
   input.click();
 };
 
+//选中文件
 const onItemSelected = (item) => {
   // 判断选中的是文件（非文件夹且有 File 对象）
   if (item.type === "file" && item.file) {
@@ -114,7 +108,12 @@ const onItemSelected = (item) => {
     // 读取成功后更新内容
     reader.onload = (event) => {
       selectedFileContent.value = event.target.result;
-      console.log(selectedFileContent.value)
+      console.log(selectedFileContent.value);
+      //传递给父组件
+      emits("fileSelected", {
+        name: selectedFileName.value,
+        content: selectedFileContent.value,
+      });
     };
 
     // 读取失败处理
@@ -133,8 +132,6 @@ const onItemChecked = (checkedItems) => {
   console.log("Checked:", checkedItems);
 };
 
- 
-
 const onBeforeItemDropped = (droppedItem, destinationNode) => {
   return new Promise((resolve) => {
     resolve(droppedItem !== destinationNode);
@@ -147,24 +144,26 @@ const onItemExpanded = (expandedItem) => {
 </script>
 
 <style scoped>
+.file-tree {
+  border: 1px solid red;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+}
 .node-icon {
   margin-right: 6px;
   font-size: 16px;
 }
-
- 
-
 </style>
 
 <style lang="scss">
 .tiny_horizontal_margin {
   // border:1px solid blue;
-    height:20px !important;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-
+  height: 20px !important;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 }
 
 .d-flex {
@@ -175,10 +174,9 @@ const onItemExpanded = (expandedItem) => {
   span {
     // border:1px solid blue;
     display: inline-block;
-    height:20px;
+    height: 20px;
     line-height: 20px;
     font-size: 16px;
- 
   }
 }
 </style>

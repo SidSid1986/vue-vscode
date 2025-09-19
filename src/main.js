@@ -2,8 +2,8 @@
  * @Author: Sid Li
  * @Date: 2025-08-06 17:13:35
  * @LastEditors: Sid Li
- * @LastEditTime: 2025-08-15 11:23:13
- * @FilePath: \pic-demo-git\pic-demo\src\main.js
+ * @LastEditTime: 2025-09-19 11:23:40
+ * @FilePath: \vue-vscode-git\src\main.js
  * @Description:
  */
 import { createApp } from "vue";
@@ -28,7 +28,8 @@ import "@/utils/rem.js";
 // 引入flexible
 import "amfe-flexible";
 
-// useLocalStorageListener();
+ 
+import XPack_WebSocketDefault from "@/utils/ws.js";
 
 const app = createApp(App);
 app.use(store);
@@ -39,5 +40,7 @@ app.use(router);
 for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
   app.component(key, component);
 }
+
+app.use(XPack_WebSocketDefault);
 
 app.mount("#app");

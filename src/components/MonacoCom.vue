@@ -1,8 +1,5 @@
 <template>
   <div class="editor-container">
-    <div class="file-content">
-      <FileTree :nodes="treeData" />
-    </div>
     <div class="editor-split">
       <!-- 左侧代码编辑区 -->
       <div ref="editorDom" class="code-editor"></div>
@@ -14,10 +11,7 @@
 import { ref, watch, onMounted, onBeforeUnmount, onActivated } from "vue";
 import beautify from "js-beautify";
 import * as monaco from "monaco-editor";
-import FileTree from "@/components/FileTree.vue";
-
-const treeData = ref([]);
-
+ 
 // Props 定义
 const props = defineProps({
   modelValue: {
@@ -48,10 +42,6 @@ const emits = defineEmits([
   "error",
 ]);
 
-//
-const pyodide = ref(null);
-const pyodideReady = ref(false);
-
 // 模板 Ref
 const editorDom = ref(null);
 let editorInstance = null;
@@ -67,17 +57,6 @@ watch(
     const currentValue = editorInstance?.getValue();
     if (newValue !== currentValue) {
       editorInstance?.setValue(newValue);
-    }
-  }
-);
-
-watch(
-  () => pyodideReady.value,
-  (isReady) => {
-    if (isReady) {
-      console.log("Pyodide 加载完成，可以运行 Python 代码了");
-      // 可选：加载完成后自动执行一段测试代码
-      // runCode();
     }
   }
 );
@@ -101,50 +80,6 @@ watch(
     }
   }
 );
-// 点击按钮选择文件夹
-const selectFolder = () => {
-  const input = document.createElement("input");
-  input.type = "file";
-  input.webkitdirectory = true;
-  input.onchange = (e) => {
-    const files = Array.from(e.target.files); // FileList -> Array
-    const tree = buildTreeStructure(files); // ✅ 使用推荐的方法构建树
-    treeData.value = tree;
-  };
-  input.click();
-};
-
-function buildTreeStructure(files) {
-  const root = { name: "root", children: [] };
-
-  files.forEach((file) => {
-    const pathParts = file.webkitRelativePath.split("/");
-    let current = root;
-
-    pathParts.forEach((part, index) => {
-      const isLast = index === pathParts.length - 1;
-      const existing = current.children?.find((child) => child.name === part);
-
-      if (!existing) {
-        const newNode = {
-          name: part,
-          path: pathParts.slice(0, index + 1).join("/"),
-          isDirectory: !isLast,
-          file: isLast ? file : null,
-          children: isLast ? undefined : [],
-        };
-
-        if (!current.children) current.children = [];
-        current.children.push(newNode);
-        current = newNode;
-      } else {
-        current = existing;
-      }
-    });
-  });
-
-  return root.children; // 最终树，从根的子节点开始
-}
 
 // 组件挂载后初始化 Monaco Editor
 onMounted(() => {
@@ -349,7 +284,7 @@ defineExpose({
 
 <style lang="scss" scoped>
 .editor-container {
-  width: 100vw;
+  width: 70vw;
   height: 100vh;
   display: flex;
   flex-direction: row;
@@ -357,21 +292,15 @@ defineExpose({
   border-radius: 4px;
 }
 
-.file-content {
-  height: 100vh;
-  width: 25vw;
-  border: 1px solid red;
-}
-
 .editor-split {
   border: 1px solid blue;
   height: 100vh;
-  width: 70vw;
+  width: 100%;
 }
 
 .code-editor {
   border: 1px solid blue;
   height: 100vh;
-  width: 70vw;
+  width: 100%;
 }
 </style>
