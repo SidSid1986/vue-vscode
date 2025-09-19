@@ -2,7 +2,7 @@
  * @Author: Sid Li
  * @Date: 2025-09-18 11:07:27
  * @LastEditors: Sid Li
- * @LastEditTime: 2025-09-19 16:11:21
+ * @LastEditTime: 2025-09-19 16:24:20
  * @FilePath: \vue-vscode-git\src\views\Home\home.vue
  * @Description: 
 -->
@@ -19,7 +19,7 @@
         @update:model-value="handleChangeResponseJson"
       />
 
-      <Terminal />
+      <div class="terminal-content"><Terminal /></div>
     </div>
   </div>
 </template>
@@ -70,5 +70,22 @@ onUnmounted(() => {});
   width: 25vw;
   height: 100vh;
   border: 1px solid green;
+}
+
+.code-content {
+  width: 75vw;
+  height: 100vh;
+  border: 1px solid red;
+  position: relative;
+}
+
+.terminal-content {
+  position: absolute;
+
+  bottom: 0;
+  height: 50vh;
+  width: 100%;
+  border: 3px solid pink;
+  z-index: 100000;
 }
 </style>

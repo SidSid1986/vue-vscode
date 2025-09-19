@@ -368,12 +368,12 @@ onUnmounted(() => {
 
 <style scoped>
 .terminal-container {
-  width: 500px;
-
-  border: 2px solid red;
+  width: 100%;
+  border: 5px solid red;
   border-radius: 4px;
   overflow: hidden;
   position: relative;
+  height: 100%;
 }
 
 /* 主题切换按钮样式 */

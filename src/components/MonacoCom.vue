@@ -11,7 +11,7 @@
 import { ref, watch, onMounted, onBeforeUnmount, onActivated } from "vue";
 import beautify from "js-beautify";
 import * as monaco from "monaco-editor";
- 
+
 // Props 定义
 const props = defineProps({
   modelValue: {
@@ -284,7 +284,7 @@ defineExpose({
 
 <style lang="scss" scoped>
 .editor-container {
-  width: 70vw;
+  width: 100%;
   height: 100vh;
   display: flex;
   flex-direction: row;
