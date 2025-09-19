@@ -20,10 +20,22 @@
 </template>
 
 <script setup>
-import { onMounted, ref, onUnmounted, getCurrentInstance } from "vue";
+import { onMounted, ref, onUnmounted, getCurrentInstance, watch } from "vue";
 import { Terminal } from "xterm";
 import { FitAddon } from "xterm-addon-fit";
 import "xterm/css/xterm.css";
+
+const props = defineProps({
+  terminalHeight: String,
+});
+
+watch(
+  () => props.terminalHeight,
+  (newValue) => {
+    terminalRef.value.style.height = newValue;
+    fitAddon.fit();
+  }
+);
 
 // 全局WebSocket实例
 const instance = getCurrentInstance();
