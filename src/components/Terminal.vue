@@ -414,6 +414,8 @@ onUnmounted(() => {
   // overflow: hidden;
   position: relative;
   height: 100%;
+
+  box-sizing: border-box;
 }
 
 /* 主题切换按钮样式 */
@@ -494,6 +496,8 @@ i {
 
 <style lang="scss">
 .dark {
+  border: 1px solid #1e1e1e;
+
   /* 滚动条整体 */
   ::-webkit-scrollbar {
     width: 30px;
@@ -533,6 +537,7 @@ i {
 }
 
 .light {
+  border: 1px solid #e0e0e0;
   /* 滚动条整体 */
   ::-webkit-scrollbar {
     width: 30px;

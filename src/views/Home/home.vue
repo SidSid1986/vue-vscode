@@ -229,15 +229,20 @@ onUnmounted(() => {
   flex-shrink: 0;
   position: relative;
   z-index: 10;
+  border: 1px solid transparent;
+  box-sizing: border-box;
 }
 
 .resize-handle:hover {
+  box-sizing: border-box;
   height: 8px;
   background-color: #007fd4;
-}
+  border: 1px solid transparent;}
 
 .resize-handle.dragging {
+  box-sizing: border-box;
   background-color: #007fd4;
+  border: 1px solid transparent;
   height: 8px;
 }
 

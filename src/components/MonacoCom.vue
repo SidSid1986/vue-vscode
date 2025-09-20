@@ -11,7 +11,6 @@ import { ref, watch, onMounted, onBeforeUnmount, onActivated } from "vue";
 import beautify from "js-beautify";
 import * as monaco from "monaco-editor";
 
- 
 const props = defineProps({
   modelValue: {
     type: String,
@@ -288,7 +287,7 @@ defineExpose({
   display: flex;
   flex-direction: row;
   border: 1px solid #e0e0e0;
-  border-radius: 4px;
+  // border-radius: 4px;
   box-sizing: border-box;
 }
 
