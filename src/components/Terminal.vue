@@ -491,3 +491,83 @@ i {
   border-color: #eeeeee;
 }
 </style>
+
+<style lang="scss">
+.dark {
+  /* 滚动条整体 */
+  ::-webkit-scrollbar {
+    width: 30px;
+    height: 30px;
+  }
+
+  /* 滚动条轨道 */
+  ::-webkit-scrollbar-track {
+    background: #1e1e1e;
+    border-radius: 0;
+  }
+
+  /* 滚动条滑块 */
+  ::-webkit-scrollbar-thumb {
+    background-color: #313438;
+    border-radius: 0;
+    border: 2px solid transparent;
+    background-clip: content-box;
+    transition: background-color 0.2s ease; /* 添加过渡效果 */
+  }
+
+  /* 滚动条滑块悬停状态 */
+  ::-webkit-scrollbar-thumb:hover {
+    background-color: #757575 !important;
+    cursor: pointer;
+  }
+
+  /* 滚动条滑块激活状态（点击时） */
+  ::-webkit-scrollbar-thumb:active {
+    background-color: #757575 !important; /* 使用稍暗的红色区分激活状态 */
+  }
+
+  /* 滚动条角落 */
+  ::-webkit-scrollbar-corner {
+    background: #1e1e1e; /* 与轨道颜色保持一致 */
+  }
+}
+
+.light {
+  /* 滚动条整体 */
+  ::-webkit-scrollbar {
+    width: 30px;
+    height: 30px;
+  }
+
+  /* 滚动条轨道 */
+  ::-webkit-scrollbar-track {
+    background: #ffffff;
+    border-radius: 0;
+  }
+
+  /* 滚动条滑块 */
+  ::-webkit-scrollbar-thumb {
+    background-color: #757575;
+    border-radius: 0;
+    border: 2px solid transparent;
+    background-clip: content-box;
+    transition: background-color 0.2s ease; /* 添加过渡效果 */
+  }
+
+  /* 滚动条滑块悬停状态 */
+  ::-webkit-scrollbar-thumb:hover {
+    background-color: #757575 !important;
+    cursor: pointer;
+  }
+
+  /* 滚动条滑块激活状态（点击时） */
+  ::-webkit-scrollbar-thumb:active {
+    background-color: #757575 !important; /* 使用稍暗的红色区分激活状态 */
+  }
+
+  /* 滚动条角落 */
+  ::-webkit-scrollbar-corner {
+    background: #1e1e1e; /* 与轨道颜色保持一致 */
+  }
+}
+</style>
