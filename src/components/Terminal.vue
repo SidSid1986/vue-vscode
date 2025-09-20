@@ -500,8 +500,8 @@ i {
 
   /* 滚动条整体 */
   ::-webkit-scrollbar {
-    width: 30px;
-    height: 30px;
+    width: 20px;
+    height: 20px;
   }
 
   /* 滚动条轨道 */
@@ -540,8 +540,8 @@ i {
   border: 1px solid #e0e0e0;
   /* 滚动条整体 */
   ::-webkit-scrollbar {
-    width: 30px;
-    height: 30px;
+    width: 20px;
+    height: 20px;
   }
 
   /* 滚动条轨道 */
