@@ -1,7 +1,6 @@
 <template>
   <div class="editor-container">
     <div class="editor-split">
-      <!-- 左侧代码编辑区 -->
       <div ref="editorDom" class="code-editor"></div>
     </div>
   </div>
@@ -12,7 +11,7 @@ import { ref, watch, onMounted, onBeforeUnmount, onActivated } from "vue";
 import beautify from "js-beautify";
 import * as monaco from "monaco-editor";
 
-// Props 定义
+ 
 const props = defineProps({
   modelValue: {
     type: String,
@@ -285,22 +284,25 @@ defineExpose({
 <style lang="scss" scoped>
 .editor-container {
   width: 100%;
-  height: 100vh;
+  height: 100%;
   display: flex;
   flex-direction: row;
   border: 1px solid #e0e0e0;
   border-radius: 4px;
+  box-sizing: border-box;
 }
 
 .editor-split {
-  border: 1px solid blue;
-  height: 100vh;
+  // border: 1px solid blue;
+  height: 100%;
   width: 100%;
+  box-sizing: border-box;
 }
 
 .code-editor {
-  border: 1px solid blue;
-  height: 100vh;
+  // border: 1px solid blue;
+  height: 100%;
   width: 100%;
+  box-sizing: border-box;
 }
 </style>

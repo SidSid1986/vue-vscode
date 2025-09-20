@@ -9,7 +9,6 @@
     <div class="code-content" ref="codeContentRef">
       <!-- 上方：代码展示区，高度动态变化 -->
       <div class="editor-content" :style="{ height: editorHeight }">
-        <!-- <pre>{{ strJson }}</pre> -->
         <MonacoCom
           ref="jsonComponents"
           :model-value="strJson"
@@ -18,15 +17,20 @@
       </div>
 
       <!-- 中间：拖拽手柄 -->
-      <div
-        class="resize-handle"
-        @mousedown="startDrag"
-        :class="{ dragging: isDragging }"
-      ></div>
+      <div class="drag-container">
+        <div
+          class="resize-handle"
+          @mousedown="startDrag"
+          :class="{ dragging: isDragging }"
+        ></div>
 
-      <!-- 下方：Terminal 组件，高度动态变化 -->
-      <div class="terminal-container" :style="{ height: terminalHeight }">
-        <Terminal :terminalHeight="terminalHeight" />
+        <!-- 下方：Terminal 组件，高度动态变化 -->
+        <div class="terminal-container" :style="{ height: terminalHeight }">
+          <Terminal
+            :terminalHeight="terminalHeight"
+            @closeTerminalFunc="closeTerminalFunc"
+          />
+        </div>
       </div>
     </div>
   </div>
@@ -38,13 +42,13 @@ import FileTree from "@/components/FileTree.vue";
 import MonacoCom from "@/components/MonacoCom.vue";
 import Terminal from "@/components/Terminal.vue";
 
-// ========== 文件内容 ==========
+//  文件内容
 const oneFileName = ref("");
 const strJson = ref(
   "# Python 示例代码\nprint('Hello Python!')\nresult = 1 + 2\nprint('计算结果：', result)"
 );
 
-// ========== 高度相关 ==========
+// 高度相关
 const codeContentRef = ref(null);
 const editorHeight = ref(""); // 动态高度，单位 px
 const terminalHeight = ref(""); // 动态高度，单位 px
@@ -54,14 +58,12 @@ const isDragging = ref(false);
 const startY = ref(0);
 const startTerminalHeight = ref(0); // 拖拽起始时 terminal 高度（px）
 
-// ========== 文件选择 ==========
+// 文件选择  ========
 const fileSelected = (file) => {
   console.log("File selected:", file);
   oneFileName.value = file.name;
   strJson.value = file.content;
 };
-
-// ========== 拖拽逻辑（你原来的逻辑，方向是对的！保留！） ==========
 
 // 开始拖拽
 const startDrag = (e) => {
@@ -92,7 +94,7 @@ const handleMouseMove = (e) => {
   if (!container) return;
 
   const containerHeight = container.clientHeight;
-  const deltaY = startY.value - e.clientY; // 注意：这里是 startY - e.clientY
+  const deltaY = startY.value - e.clientY; //  startY - e.clientY
 
   // newTerminalHeight = 初始 Terminal 高度 + deltaY
   // newEditorHeight = 初始总高度 - newTerminalHeight
@@ -124,7 +126,7 @@ const stopDrag = () => {
   document.removeEventListener("mouseup", stopDrag);
 };
 
-// 工具：将 "30vh" 或 "400px" 转为 px 数字
+// 转为 px 数字
 const parseHeight = (heightStr, containerHeight) => {
   if (heightStr.endsWith("px")) {
     return parseFloat(heightStr);
@@ -134,10 +136,18 @@ const parseHeight = (heightStr, containerHeight) => {
   return containerHeight / 2; // 默认值，备用
 };
 
-// ========== 生命周期 ==========
+const closeTerminalFunc = () => {
+  terminalHeight.value = 0;
+  editorHeight.value = "100%";
+};
+
+const handleChangeResponseJson = () => {
+  // 返回内容值，根据业务增加
+};
+
 onMounted(() => {
   nextTick(() => {
-    // 初始化高度（可选，比如默认各占一半）
+    // 初始化高度
     const containerHeight = codeContentRef.value?.clientHeight || 600;
     const initialTerminalHeight = containerHeight * 0.3; // 30%
     const initialEditorHeight = containerHeight - initialTerminalHeight;
@@ -153,7 +163,7 @@ onUnmounted(() => {
 });
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 .container {
   display: flex;
   flex-direction: row;
@@ -167,24 +177,36 @@ onUnmounted(() => {
 .file-content {
   width: 25vw;
   height: 100vh;
-  border: 1px solid green;
+  /* border: 1px solid green; */
+  // i {
+  //   font-size: 20px;
+  //   color: red;
+  // }
 }
 
 .code-content {
   width: 75vw;
   height: 100vh;
-  border: 1px solid red;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
+  position: relative;
+  /* border: 1px solid red; */
+  // display: flex;
+  // flex-direction: column;
+  // overflow: hidden;
 }
 
 .editor-content {
   width: 100%;
   overflow: auto;
   box-sizing: border-box;
-  padding: 10px;
+  /* padding: 10px; */
   background: #f6f6f6;
+}
+
+.drag-container {
+  width: 100%;
+  // background: green;
+  position: absolute;
+  bottom: 0;
 }
 
 .terminal-container {
@@ -192,15 +214,17 @@ onUnmounted(() => {
   box-sizing: border-box;
   overflow: hidden;
   background-color: #1e1e1e; /* 模拟终端背景色 */
+  // border: 3px solid red;
 }
 
 .resize-handle {
-  height: 6px;
-  background-color: #e0e0e0;
+  height: 8px;
+  // background-color: pink;
+  background-color: transparent;
   cursor: ns-resize;
   user-select: none;
-  border-top: 1px solid #ccc;
-  border-bottom: 1px solid #ccc;
+  // border-top: 1px solid #ccc;
+  // border-bottom: 1px solid #ccc;
   transition: background-color 0.2s;
   flex-shrink: 0;
   position: relative;
@@ -208,11 +232,12 @@ onUnmounted(() => {
 }
 
 .resize-handle:hover {
-  background-color: #d0d0d0;
+  height: 8px;
+  background-color: #007fd4;
 }
 
 .resize-handle.dragging {
-  background-color: #a0a0a0;
+  background-color: #007fd4;
   height: 8px;
 }
 

@@ -1,32 +1,27 @@
 <template>
-  <div class="terminal-container" :class="lightOrNight ? 'light' : 'dark'">
+  <div class="terminal-container">
     <!-- 主题切换按钮 -->
-
-    <div
-      class="theme-controls"
-      :class="currentTheme === 'dark' ? 'controls-dark' : 'controls-light'"
-    >
-      <i
-        @click="switchTheme()"
-        :class="
-          currentTheme === 'dark'
-            ? 'iconfont icon-mingliangmoshi'
-            : 'iconfont icon-yejianmoshi'
-        "
-      ></i>
-
-      <i
-        @click="closeTerminal()"
-        class="iconfont icon-guanbi"
-        :class="currentTheme === 'dark' ? 'close-dark' : 'close-light'"
-      ></i>
+    <div class="theme-controls">
+      <button
+        @click="switchTheme('dark')"
+        :class="{ active: currentTheme === 'dark' }"
+      >
+        深色模式
+      </button>
+      <i class="iconfont icon-yejianmoshi"></i>"
+      <button
+        @click="switchTheme('light')"
+        :class="{ active: currentTheme === 'light' }"
+      >
+        浅色模式
+      </button>
+      <i class="iconfont icon-mingliangmoshi"></i>"
     </div>
     <div ref="terminalRef" class="terminal"></div>
   </div>
 </template>
 
 <script setup>
-import { close } from "element-plus/es/components/notification/src/notify.mjs";
 import { onMounted, ref, onUnmounted, getCurrentInstance, watch } from "vue";
 import { Terminal } from "xterm";
 import { FitAddon } from "xterm-addon-fit";
@@ -35,8 +30,6 @@ import "xterm/css/xterm.css";
 const props = defineProps({
   terminalHeight: String,
 });
-
-const emit = defineEmits(["closeTerminalFunc"]);
 
 watch(
   () => props.terminalHeight,
@@ -59,11 +52,11 @@ let isWsConnected = false;
 let isCommandSent = false;
 let isLoading = ref(false);
 
-//  命令历史记录
+// 1. 命令历史记录
 const commandHistory = ref([]); // 存储历史命令
 const historyIndex = ref(-1); // 当前历史索引
 
-//   路径自动补全（模拟数据）
+// 2. 路径自动补全（模拟数据）
 const mockPaths = [
   "/d/sid/vue-vscode-git",
   "/d/sid/vue-vscode-git/src",
@@ -75,8 +68,7 @@ const mockPaths = [
   "/d/sid/vue-vscode-git/src/views",
 ];
 
-//  终端主题
-const lightOrNight = ref(false);
+// 4. 终端主题（v5.x 配置）
 const currentTheme = ref("dark");
 const themes = {
   dark: {
@@ -330,23 +322,13 @@ const getCommandSuggestions = (wrongCommand) => {
   );
 };
 
-// 修改切换主题函数
-const switchTheme = () => {
-  if (!terminal) return;
+// 4. 切换主题（v5.x 正确方式）
+const switchTheme = (theme) => {
+  if (currentTheme.value === theme || !terminal) return;
 
-  // 计算新主题（与当前主题相反）
-  const newTheme = currentTheme.value === "dark" ? "light" : "dark";
-
-  lightOrNight.value = !lightOrNight.value;
-
-  // 如果主题没变则退出
-  if (currentTheme.value === newTheme) return;
-
-  // 更新当前主题
-  currentTheme.value = newTheme;
-
-  // 应用新主题（保留原有的核心逻辑）
-  terminal.options.theme = { ...themes[newTheme] };
+  currentTheme.value = theme;
+  // 直接修改options.theme（v5.x官方推荐）
+  terminal.options.theme = { ...themes[theme] };
   // 强制刷新终端以应用新主题
   terminal.refresh(0, terminal.rows - 1);
 };
@@ -381,14 +363,6 @@ const isPrintable = (data) => {
   return (code >= 32 && code <= 126) || code > 127;
 };
 
-const closeTerminal = () => {
-  emit("closeTerminalFunc");
-  if (terminal) {
-    terminal.dispose();
-    terminal = null;
-  }
-};
-
 // 生命周期
 onMounted(() => {
   initTerminal();
@@ -406,88 +380,48 @@ onUnmounted(() => {
 });
 </script>
 
-<style scoped lang="scss">
+<style scoped>
 .terminal-container {
   width: 100%;
   /* border: 5px solid red; */
-  // border-radius: 4px;
-  // overflow: hidden;
+  border-radius: 4px;
+  overflow: hidden;
   position: relative;
   height: 100%;
 }
 
 /* 主题切换按钮样式 */
 .theme-controls {
-  box-sizing: border-box;
-  width: 100%;
-  height: 40px;
-
-  // background-color: pink;
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 10;
   display: flex;
-  flex-direction: row;
-  justify-content: flex-end;
-  align-items: center;
-  padding: 0 20px;
-  i {
-    margin-left: 20px;
-  }
+  gap: 8px;
 }
 
-.controls-dark {
-  background-color: #1e1e1e;
-  border-bottom: 1px solid #909090;
+.theme-controls button {
+  padding: 4px 8px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  background: #555;
+  color: white;
+  transition: background 0.2s;
 }
 
-.controls-light {
-  background-color: #ffffff;
-  border-bottom: 1px solid #909090;
+.theme-controls button.active {
+  background: #0078d7;
+}
+
+.theme-controls button:hover:not(.active) {
+  background: #666;
 }
 
 /* 终端样式 */
 .terminal {
   width: 100%;
   height: 100%;
-}
-
-.light {
-  background-color: #ffffff !important;
-}
-.dark {
-  background-color: #1e1e1e !important;
-}
-i {
-  font-size: 25px;
-  cursor: pointer;
-}
-
-.icon-mingliangmoshi {
-  color: #ffffff;
-}
-.icon-yejianmoshi {
-  color: #1e1e1e;
-}
-
-.close-dark {
-  display: inline-block;
-  border: 1px solid transparent;
-  border-radius: 8px;
-  color: #ffffff;
-  padding: 4px;
-}
-
-.close-light {
-  display: inline-block;
-  border: 1px solid transparent;
-  border-radius: 8px;
-  color: #1e1e1e;
-  padding: 4px;
-}
-
-.close-dark:hover {
-  border-color: #1e1e1e;
-}
-
-.close-light:hover {
-  border-color: #eeeeee;
 }
 </style>

@@ -2,7 +2,7 @@
  * @Author: Sid Li
  * @Date: 2025-08-06 17:13:35
  * @LastEditors: Sid Li
- * @LastEditTime: 2025-09-19 11:23:40
+ * @LastEditTime: 2025-09-20 10:09:20
  * @FilePath: \vue-vscode-git\src\main.js
  * @Description:
  */
@@ -11,6 +11,8 @@ import App from "./App.vue";
 
 import ElementPlus from "element-plus";
 import "element-plus/dist/index.css";
+
+import "@/assets/icon/iconfont.css";
 
 // import "@/styles/element/index.scss";
 import * as ElementPlusIconsVue from "@element-plus/icons-vue";
@@ -28,7 +30,6 @@ import "@/utils/rem.js";
 // 引入flexible
 import "amfe-flexible";
 
- 
 import XPack_WebSocketDefault from "@/utils/ws.js";
 
 const app = createApp(App);
