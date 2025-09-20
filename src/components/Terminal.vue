@@ -33,13 +33,13 @@ import { FitAddon } from "xterm-addon-fit";
 import "xterm/css/xterm.css";
 
 const props = defineProps({
-  terminalHeight: String,
+  terminalContentHeight: String,
 });
 
 const emit = defineEmits(["closeTerminalFunc"]);
 
 watch(
-  () => props.terminalHeight,
+  () => props.terminalContentHeight,
   (newValue) => {
     terminalRef.value.style.height = newValue;
     fitAddon.fit();
@@ -409,10 +409,10 @@ onUnmounted(() => {
 <style scoped lang="scss">
 .terminal-container {
   width: 100%;
-  /* border: 5px solid red; */
+  // border: 5px solid red;
   // border-radius: 4px;
   // overflow: hidden;
-  position: relative;
+
   height: 100%;
 
   box-sizing: border-box;

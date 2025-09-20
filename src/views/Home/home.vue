@@ -27,7 +27,7 @@
         <!-- 下方：Terminal 组件，高度动态变化 -->
         <div class="terminal-container" :style="{ height: terminalHeight }">
           <Terminal
-            :terminalHeight="terminalHeight"
+            :terminalContentHeight="terminalContentHeight"
             @closeTerminalFunc="closeTerminalFunc"
           />
         </div>
@@ -52,6 +52,7 @@ const strJson = ref(
 const codeContentRef = ref(null);
 const editorHeight = ref(""); // 动态高度，单位 px
 const terminalHeight = ref(""); // 动态高度，单位 px
+const terminalContentHeight = ref("");
 const isDragging = ref(false);
 
 // 拖拽相关变量
@@ -116,6 +117,8 @@ const handleMouseMove = (e) => {
 
   // 设置高度（px）
   terminalHeight.value = `${newTerminalHeightPx}px`;
+
+  terminalContentHeight.value = `${newTerminalHeightPx - 40}px`;
   editorHeight.value = `${newEditorHeightPx}px`;
 };
 
@@ -153,6 +156,7 @@ onMounted(() => {
     const initialEditorHeight = containerHeight - initialTerminalHeight;
 
     terminalHeight.value = `${initialTerminalHeight}px`;
+    terminalContentHeight.value = `${initialTerminalHeight - 40}px`;
     editorHeight.value = `${initialEditorHeight}px`;
   });
 });
@@ -237,7 +241,8 @@ onUnmounted(() => {
   box-sizing: border-box;
   height: 8px;
   background-color: #007fd4;
-  border: 1px solid transparent;}
+  border: 1px solid transparent;
+}
 
 .resize-handle.dragging {
   box-sizing: border-box;
