@@ -416,6 +416,7 @@ onUnmounted(() => {
   height: 100%;
 
   box-sizing: border-box;
+  border-top: 3px solid #484849;
 }
 
 /* 主题切换按钮样式 */
@@ -436,13 +437,15 @@ onUnmounted(() => {
 }
 
 .controls-dark {
-  background-color: #292A2B;
-  border-bottom: 1px solid #909090;
+  background-color: #292a2b;
+  // border-bottom: 1px solid #909090;
+  // border-top: 1px solid #909090;
 }
 
 .controls-light {
   background-color: #ffffff;
-  border-bottom: 1px solid #909090;
+  // border-bottom: 1px solid #909090;
+  // border-top: 1px solid #909090;
 }
 
 /* 终端样式 */
@@ -455,7 +458,7 @@ onUnmounted(() => {
   background-color: #ffffff !important;
 }
 .dark {
-  background-color: #292A2B !important;
+  background-color: #292a2b !important;
 }
 i {
   font-size: 25px;
@@ -466,7 +469,7 @@ i {
   color: #ffffff;
 }
 .icon-yejianmoshi {
-  color: #292A2B;
+  color: #292a2b;
 }
 
 .close-dark {
@@ -481,12 +484,12 @@ i {
   display: inline-block;
   border: 1px solid transparent;
   border-radius: 8px;
-  color: #292A2B;
+  color: #292a2b;
   padding: 4px;
 }
 
 .close-dark:hover {
-  border-color: #292A2B;
+  border-color: #292a2b;
 }
 
 .close-light:hover {
@@ -496,7 +499,7 @@ i {
 
 <style lang="scss">
 .dark {
-  border: 1px solid #292A2B;
+  border: 1px solid #292a2b;
 
   /* 滚动条整体 */
   ::-webkit-scrollbar {
@@ -506,7 +509,7 @@ i {
 
   /* 滚动条轨道 */
   ::-webkit-scrollbar-track {
-    background: #292A2B;
+    background: #292a2b;
     border-radius: 0;
   }
 
@@ -532,7 +535,7 @@ i {
 
   /* 滚动条角落 */
   ::-webkit-scrollbar-corner {
-    background: #292A2B; /* 与轨道颜色保持一致 */
+    background: #292a2b; /* 与轨道颜色保持一致 */
   }
 }
 
@@ -572,7 +575,7 @@ i {
 
   /* 滚动条角落 */
   ::-webkit-scrollbar-corner {
-    background: #292A2B; /* 与轨道颜色保持一致 */
+    background: #292a2b; /* 与轨道颜色保持一致 */
   }
 }
 </style>

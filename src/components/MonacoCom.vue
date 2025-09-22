@@ -1,6 +1,12 @@
 <template>
   <div class="editor-container">
     <div class="editor-split">
+      <!-- 右上角主题切换按钮 -->
+      <div class="theme-switcher">
+        <button @click="toggleTheme" class="theme-btn" title="切换主题">
+          {{ isDarkTheme ? "🌞 浅色" : "🌙 深色" }}
+        </button>
+      </div>
       <div ref="editorDom" class="code-editor"></div>
     </div>
   </div>
@@ -11,6 +17,7 @@ import { ref, watch, onMounted, onBeforeUnmount, onActivated } from "vue";
 import beautify from "js-beautify";
 import * as monaco from "monaco-editor";
 
+// 🔧 Props 定义
 const props = defineProps({
   modelValue: {
     type: String,
@@ -18,9 +25,8 @@ const props = defineProps({
   },
   language: {
     type: String,
-    default: "javascript", // 默认支持JavaScript
+    default: "javascript",
   },
-
   readOnly: {
     type: Boolean,
     default: false,
@@ -29,9 +35,14 @@ const props = defineProps({
     type: Object,
     default: () => ({}),
   },
+  // 可选：初始主题，可以是 'vs' | 'vs-dark' | 'hc-black' | 'my-custom-dark'
+  initialTheme: {
+    type: String,
+    default: "my-custom-dark", // 默认深色，你可以改成 'my-custom-dark' 来直接用自定义背景色
+  },
 });
 
-// Emits 定义
+// 📤 Emits 定义
 const emits = defineEmits([
   "update:modelValue",
   "change",
@@ -40,139 +51,63 @@ const emits = defineEmits([
   "error",
 ]);
 
-// 模板 Ref
+// 🎯 Template Ref
 const editorDom = ref(null);
 let editorInstance = null;
 
-// 运行结果相关
+// 📝 编辑器内容相关
 const resultContent = ref("");
 const isRunning = ref(false);
 
-// 监听 modelValue 变化，同步到编辑器
-watch(
-  () => props.modelValue,
-  (newValue) => {
-    const currentValue = editorInstance?.getValue();
-    if (newValue !== currentValue) {
-      editorInstance?.setValue(newValue);
-    }
-  }
-);
+// 🌈 主题相关状态
+const isDarkTheme = ref(false);
+const currentTheme = ref(props.initialTheme);
 
-// 监听 readOnly 变化，更新编辑器配置
-watch(
-  () => props.readOnly,
-  (readOnly) => {
-    editorInstance?.updateOptions({
-      readOnly,
-    });
+// 🎨 主题切换方法（浅色/深色切换，内置主题）
+const toggleTheme = () => {
+  if (currentTheme.value === "vs") {
+    currentTheme.value = "vs-dark";
+    isDarkTheme.value = true;
+  } else {
+    currentTheme.value = "vs";
+    isDarkTheme.value = false;
   }
-);
-
-// 监听语言变化
-watch(
-  () => props.language,
-  (language) => {
-    if (editorInstance) {
-      monaco.editor.setModelLanguage(editorInstance.getModel(), language);
-    }
+  if (editorInstance) {
+    monaco.editor.setTheme(currentTheme.value);
   }
-);
+};
 
-// 组件挂载后初始化 Monaco Editor
-onMounted(() => {
-  // 创建编辑器实例
-  editorInstance = monaco.editor.create(editorDom.value, {
-    value: props.modelValue,
-    language: props.language,
-    automaticLayout: true,
-    parameterHints: {
-      enabled: true,
-    },
-    minimap: {
-      enabled: true,
-    },
-    wrappingStrategy: "advanced",
-    scrollBeyondLastLine: false,
-    fontSize: 14,
-    readOnly: props.readOnly,
-    stopTrustedEvents: false,
-    ...props.config,
+// 🛠️ 手动设置主题（支持内置和自定义主题，比如 'my-custom-dark'）
+const setTheme = (themeName) => {
+  currentTheme.value = themeName;
+  if (themeName === "vs-dark") {
+    isDarkTheme.value = true;
+  } else if (themeName === "vs") {
+    isDarkTheme.value = false;
+  } else {
+    // 自定义主题，可以根据名字自行判断是否深色
+    isDarkTheme.value = true; // 假设其他都是深色
+  }
+  if (editorInstance) {
+    monaco.editor.setTheme(themeName);
+  }
+};
+
+// 🧹 代码格式化
+const format = () => {
+  const formatted = beautify(editorInstance.getValue(), {
+    indent_size: 4,
+    preserve_newlines: true,
   });
+  editorInstance?.setValue(formatted);
+};
 
-  // 监听编辑器内容变化，向父组件同步
-  editorInstance.onDidChangeModelContent(() => {
-    const value = editorInstance.getValue();
-    emits("update:modelValue", value);
-    emits("change", value);
-  });
-
-  // 通知父组件编辑器已 ready
-  emits("ready", editorInstance);
-});
-
-// Tab 页激活时聚焦编辑器
-onActivated(() => {
+// 👁️ 聚焦编辑器
+const focus = () => {
   editorInstance?.focus();
-});
+};
 
-// 组件卸载前销毁编辑器，防止内存泄漏
-onBeforeUnmount(() => {
-  editorInstance?.dispose();
-});
-
-// 运行代码js
-// const runCode = () => {
-//   if (isRunning.value) return;
-
-//   const code = editorInstance.getValue();
-//   if (!code.trim()) {
-//     resultContent.value = "请输入代码后再运行";
-//     return;
-//   }
-
-//   try {
-//     isRunning.value = true;
-//     resultContent.value = "运行中...";
-//     emits("run", code);
-
-//     // 这里使用沙箱环境执行代码，避免污染全局
-//     // 注意：在生产环境中执行用户代码需要更严格的安全措施
-//     const output = [];
-//     const console = {
-//       log: (...args) =>
-//         output.push(
-//           ...args.map((arg) =>
-//             typeof arg === "object" ? JSON.stringify(arg, null, 2) : String(arg)
-//           )
-//         ),
-//       error: (...args) => output.push(...args.map((arg) => `Error: ${arg}`)),
-//     };
-
-//     // 使用IIFE执行代码，捕获输出
-//     const result = (function (console) {
-//       try {
-//         return eval(code); // 注意：eval有安全风险，生产环境需谨慎
-//       } catch (e) {
-//         console.error(e.message);
-//         return null;
-//       }
-//     })(console);
-
-//     if (result !== undefined) {
-//       output.push("返回结果:", result);
-//     }
-
-//     resultContent.value = output.join("\n");
-//   } catch (error) {
-//     resultContent.value = `执行错误: ${error.message}`;
-//     emits("error", error);
-//   } finally {
-//     isRunning.value = false;
-//   }
-// };
-
-// 运行代码python
+// ▶️ 运行代码逻辑（略，与你原来一样）
 const runCode = async () => {
   if (isRunning.value) return;
 
@@ -183,7 +118,6 @@ const runCode = async () => {
   }
 
   if (props.language === "javascript") {
-    // 保留原 JS 执行逻辑（不变）
     try {
       isRunning.value = true;
       resultContent.value = "运行中...";
@@ -223,24 +157,23 @@ const runCode = async () => {
       isRunning.value = false;
     }
   } else if (props.language === "python") {
-    // Python 执行逻辑（依赖 Pyodide，已在 onMounted 中加载）
-    if (!pyodideReady.value) {
-      resultContent.value = "Pyodide 正在加载，请稍后重试";
+    if (!window.pyodide) {
+      resultContent.value = "Pyodide 未加载，请先加载 Pyodide 运行时";
       return;
     }
     try {
       isRunning.value = true;
       resultContent.value = "运行中...";
-      // 重定向 Python 的 print 到结果区（解决原逻辑无输出问题）
-      pyodide.value.globals.set("print", (...args) => {
-        const msg = args.map((arg) => pyodide.value.repr(arg)).join(" ");
+      emits("run", code);
+
+      window.pyodide.globals.set("print", (...args) => {
+        const msg = args.map((arg) => window.pyodide.repr(arg)).join(" ");
         resultContent.value += msg + "\n";
       });
-      // 执行 Python 代码
-      const result = await pyodide.value.runPythonAsync(code);
-      // 补充返回结果（若有）
+
+      const result = await window.pyodide.runPythonAsync(code);
       if (result !== undefined && result !== null) {
-        resultContent.value += "\n返回结果: " + pyodide.value.repr(result);
+        resultContent.value += "\n返回结果: " + window.pyodide.repr(result);
       }
     } catch (error) {
       resultContent.value = `执行错误: ${error.message}`;
@@ -252,32 +185,129 @@ const runCode = async () => {
     resultContent.value = "不支持该语言运行";
   }
 };
-// 清空结果
+
+// 🧹 清空运行结果
 const clearResult = () => {
   resultContent.value = "";
 };
 
-// 暴露格式化方法
-const format = () => {
-  const formatted = beautify(editorInstance.getValue(), {
-    indent_size: 4,
-    preserve_newlines: true,
-  });
-  editorInstance?.setValue(formatted);
-};
-
-// 暴露聚焦方法
-const focus = () => {
-  editorInstance?.focus();
-};
-
-// 向父组件暴露方法
+// 🧩 暴露方法给父组件
 defineExpose({
   format,
   focus,
   runCode,
   clearResult,
+  setTheme,
+  toggleTheme,
 });
+
+// --------------------------
+// 生命周期 & 监听
+// --------------------------
+
+// 初始化编辑器
+// 初始化编辑器
+onMounted(() => {
+  if (!editorDom.value) return;
+
+  editorInstance = monaco.editor.create(editorDom.value, {
+    value: props.modelValue,
+    language: props.language,
+    automaticLayout: true,
+    parameterHints: { enabled: true },
+    minimap: { enabled: true },
+    wrappingStrategy: "advanced",
+    scrollBeyondLastLine: false,
+    fontSize: 14,
+    readOnly: props.readOnly,
+    stopTrustedEvents: false,
+    ...props.config,
+  });
+
+  // ======================
+  // ✅ 正确设置主题（包括自定义主题 my-custom-dark）
+  // ======================
+
+  const theme = currentTheme.value; // 可能是 'vs', 'vs-dark', 'my-custom-dark'
+
+  // 如果是自定义主题 'my-custom-dark'，需要先定义它
+  if (theme === "my-custom-dark") {
+    monaco.editor.defineTheme("my-custom-dark", {
+      base: "vs-dark",
+      inherit: true,
+      rules: [],
+      colors: {
+        // ✅ 重点：这就是你想要的背景色 #292a2b
+        "editor.background": "#292a2b",
+        "editor.foreground": "#cccccc",
+        "editorLineNumber.foreground": "#858585",
+        "editorCursor.foreground": "#ffffff",
+        "editor.selectionBackground": "#3e3e3e",
+      },
+    });
+  }
+
+  // 然后再设置主题（无论是内置还是自定义）
+  monaco.editor.setTheme(theme);
+
+  // 更新 isDarkTheme 状态（可选，用于 UI 按钮显示）
+  if (theme === "vs-dark" || theme === "my-custom-dark") {
+    isDarkTheme.value = true;
+  } else {
+    isDarkTheme.value = false;
+  }
+
+  // 监听编辑器内容变化
+  editorInstance.onDidChangeModelContent(() => {
+    const value = editorInstance.getValue();
+    emits("update:modelValue", value);
+    emits("change", value);
+  });
+
+  // 通知编辑器已 ready
+  emits("ready", editorInstance);
+});
+
+// 激活时聚焦
+onActivated(() => {
+  editorInstance?.focus();
+});
+
+// 销毁时清理
+onBeforeUnmount(() => {
+  editorInstance?.dispose();
+});
+
+// 监听 modelValue 变化
+watch(
+  () => props.modelValue,
+  (newValue) => {
+    const currentValue = editorInstance?.getValue();
+    if (newValue !== currentValue) {
+      editorInstance?.setValue(newValue);
+    }
+  }
+);
+
+// 监听 readOnly
+watch(
+  () => props.readOnly,
+  (readOnly) => {
+    editorInstance?.updateOptions({
+      readOnly,
+    });
+  }
+);
+
+// 监听语言变化
+watch(
+  () => props.language,
+  (language) => {
+    if (editorInstance) {
+      monaco.editor.setModelLanguage(editorInstance.getModel(), language);
+    }
+  }
+);
 </script>
 
 <style lang="scss" scoped>
@@ -285,23 +315,40 @@ defineExpose({
   width: 100%;
   height: 100%;
   display: flex;
-  flex-direction: row;
-  border: 1px solid #e0e0e0;
-  // border-radius: 4px;
-  box-sizing: border-box;
+  flex-direction: column;
 }
 
 .editor-split {
-  // border: 1px solid blue;
   height: 100%;
   width: 100%;
+  position: relative;
   box-sizing: border-box;
 }
 
 .code-editor {
-  // border: 1px solid blue;
   height: 100%;
   width: 100%;
   box-sizing: border-box;
+}
+
+.theme-switcher {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 10;
+}
+
+.theme-btn {
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  padding: 4px 8px;
+  font-size: 12px;
+  cursor: pointer;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+
+  &:hover {
+    background: rgba(255, 255, 255, 1);
+  }
 }
 </style>

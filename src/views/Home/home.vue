@@ -293,7 +293,8 @@ onUnmounted(() => {
   width: 100%;
   overflow: auto;
   box-sizing: border-box;
-  background: #f6f6f6;
+  // background: #f6f6f6;
+  background-color: #1e1e1e;
 }
 
 .drag-container-horizontal {
