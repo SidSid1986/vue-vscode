@@ -66,7 +66,8 @@ const currentTheme = ref(props.initialTheme);
 // 🎨 主题切换方法（浅色/深色切换，内置主题）
 const toggleTheme = () => {
   if (currentTheme.value === "vs") {
-    currentTheme.value = "vs-dark";
+    // currentTheme.value = "vs-dark";
+    currentTheme.value = "my-custom-dark"; //切换到自定义
     isDarkTheme.value = true;
   } else {
     currentTheme.value = "vs";
@@ -77,7 +78,7 @@ const toggleTheme = () => {
   }
 };
 
-// 🛠️ 手动设置主题（支持内置和自定义主题，比如 'my-custom-dark'）
+// 🛠️ 手动设置主题 my-custom-dark
 const setTheme = (themeName) => {
   currentTheme.value = themeName;
   if (themeName === "vs-dark") {
