@@ -11,6 +11,7 @@
         @onSelect="onItemSelected"
         @onExpand="onItemExpanded"
         @dropValidator="onBeforeItemDropped"
+        class="norem-tree"
       >
         <!--   用 FileIcon 组件渲染图标 -->
         <template v-slot:item-prepend-icon="treeItem">
@@ -31,7 +32,7 @@ import { ref } from "vue";
 
 import FileIcon from "@/components/FileIcon.vue"; // 导入自定义图标组件
 import Vue3TreeVue from "vue3-tree-vue";
-import "vue3-tree-vue/dist/style.css"; // ✅ 正确的官方样式文件
+import "vue3-tree-vue/dist/style.css";
 
 // 不再使用 TypeScript，items 就是一个普通数组
 const items = ref([]); // 直接是数组，里面是对象，每个对象包含 text, type, children...
@@ -166,17 +167,19 @@ const onItemExpanded = (expandedItem) => {
   justify-content: center;
 }
 
-.d-flex {
-  display: flex !important;
-  flex-direction: row !important;
-  justify-content: flex-start !important;
-  align-items: center !important;
-  span {
-    // border:1px solid blue;
-    display: inline-block;
-    height: 20px;
-    line-height: 20px;
-    font-size: 16px;
+.norem-tree {
+  .d-flex {
+    display: flex !important;
+    flex-direction: row !important;
+    justify-content: flex-start !important;
+    align-items: center !important;
+    span {
+      // border:1px solid blue;
+      display: inline-block;
+      height: 20px;
+      line-height: 20px;
+      font-size: 16px;
+    }
   }
 }
 </style>

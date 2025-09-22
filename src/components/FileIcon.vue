@@ -1,9 +1,13 @@
+<!--
+ * @Author: Sid Li
+ * @Date: 2025-09-19 08:42:22
+ * @LastEditors: Sid Li
+ * @LastEditTime: 2025-09-22 08:50:56
+ * @FilePath: \vue-vscode-git\src\components\FileIcon.vue
+ * @Description: 
+-->
 <template>
-  <img
-    :src="iconSrc"
-    alt="File icon"
-    class="file-icon" 
-  />
+  <img :src="iconSrc" alt="File icon" class="norem-file-icon" />
 </template>
 
 <script setup lang="ts">
@@ -21,7 +25,6 @@ const props = defineProps<{
   size?: number;
 }>();
 
- 
 const iconSrc = computed(() => {
   let iconName: string = "";
   try {
@@ -34,7 +37,8 @@ const iconSrc = computed(() => {
     }
     return new URL(`/icons/${iconName}`, window.location.origin).href;
   } catch (error) {
-    iconName = props.fileType === "folder" ? "default_folder.svg" : "default_file.svg";
+    iconName =
+      props.fileType === "folder" ? "default_folder.svg" : "default_file.svg";
     console.error("图标处理异常:", error);
     return new URL(`/icons/${iconName}`, window.location.origin).href;
   }
@@ -43,13 +47,12 @@ const iconSrc = computed(() => {
 
 <style scoped>
 /* CSS 直接引用带单位的变量，无需拼接 */
-.file-icon {
+.norem-file-icon {
   /* 正确写法：直接用 v-bind 引用带单位的计算属性 */
   width: 20px;
   height: 20px;
-  
+
   /* border: 1px solid red; */
   margin-right: 6px;
-   
 }
 </style>
