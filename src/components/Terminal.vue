@@ -80,7 +80,7 @@ const lightOrNight = ref(false);
 const currentTheme = ref("dark");
 const themes = {
   dark: {
-    background: "#1e1e1e",
+    background: "#292A2B",
     foreground: "#d4d4d4",
     cursor: "#ffffff",
     selectionBackground: "rgba(255, 255, 255, 0.2)",
@@ -436,7 +436,7 @@ onUnmounted(() => {
 }
 
 .controls-dark {
-  background-color: #1e1e1e;
+  background-color: #292A2B;
   border-bottom: 1px solid #909090;
 }
 
@@ -455,7 +455,7 @@ onUnmounted(() => {
   background-color: #ffffff !important;
 }
 .dark {
-  background-color: #1e1e1e !important;
+  background-color: #292A2B !important;
 }
 i {
   font-size: 25px;
@@ -466,7 +466,7 @@ i {
   color: #ffffff;
 }
 .icon-yejianmoshi {
-  color: #1e1e1e;
+  color: #292A2B;
 }
 
 .close-dark {
@@ -481,12 +481,12 @@ i {
   display: inline-block;
   border: 1px solid transparent;
   border-radius: 8px;
-  color: #1e1e1e;
+  color: #292A2B;
   padding: 4px;
 }
 
 .close-dark:hover {
-  border-color: #1e1e1e;
+  border-color: #292A2B;
 }
 
 .close-light:hover {
@@ -496,7 +496,7 @@ i {
 
 <style lang="scss">
 .dark {
-  border: 1px solid #1e1e1e;
+  border: 1px solid #292A2B;
 
   /* 滚动条整体 */
   ::-webkit-scrollbar {
@@ -506,7 +506,7 @@ i {
 
   /* 滚动条轨道 */
   ::-webkit-scrollbar-track {
-    background: #1e1e1e;
+    background: #292A2B;
     border-radius: 0;
   }
 
@@ -532,7 +532,7 @@ i {
 
   /* 滚动条角落 */
   ::-webkit-scrollbar-corner {
-    background: #1e1e1e; /* 与轨道颜色保持一致 */
+    background: #292A2B; /* 与轨道颜色保持一致 */
   }
 }
 
@@ -572,7 +572,7 @@ i {
 
   /* 滚动条角落 */
   ::-webkit-scrollbar-corner {
-    background: #1e1e1e; /* 与轨道颜色保持一致 */
+    background: #292A2B; /* 与轨道颜色保持一致 */
   }
 }
 </style>

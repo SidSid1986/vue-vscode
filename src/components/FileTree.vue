@@ -1,8 +1,8 @@
 <template>
   <div class="file-tree">
-    <button @click="selectFolder">选择文件夹</button>
+    <button style="color: red" @click="selectFolder">测试选择文件夹</button>
 
-    <div v-if="items.length > 0">
+    <div v-if="items.length > 0" class="tree-container">
       <vue3-tree-vue
         :items="items"
         :isCheckable="false"
@@ -13,7 +13,7 @@
         @dropValidator="onBeforeItemDropped"
         class="norem-tree"
       >
-        <!--   用 FileIcon 组件渲染图标 -->
+        <!-- 用 FileIcon 组件渲染图标 -->
         <template v-slot:item-prepend-icon="treeItem">
           <FileIcon
             :fileName="treeItem.name || 'default_file'"
@@ -30,18 +30,16 @@
 <script setup>
 import { ref } from "vue";
 
-import FileIcon from "@/components/FileIcon.vue"; // 导入自定义图标组件
+import FileIcon from "@/components/FileIcon.vue";
 import Vue3TreeVue from "vue3-tree-vue";
 import "vue3-tree-vue/dist/style.css";
 
-// 不再使用 TypeScript，items 就是一个普通数组
-const items = ref([]); // 直接是数组，里面是对象，每个对象包含 text, type, children...
-// 新增：保存选中的文件信息和内容
-
+const items = ref([]);
 const emits = defineEmits(["fileSelected"]);
 const selectedFileName = ref("");
 const selectedFileContent = ref("");
-// 构建树：将 File 对象数组转成树形结构
+
+// 构建树结构（保持不变）
 const buildTreeStructure = (files) => {
   const root = { name: "root", children: [] };
 
@@ -55,7 +53,6 @@ const buildTreeStructure = (files) => {
 
       if (!existing) {
         const ext = isLast ? part.split(".").pop().toLowerCase() : "";
-        // 关键：判断是否为第一层节点（root的直接子节点）
         const isFirstLevel = current.name === "root";
 
         const newNode = {
@@ -66,7 +63,6 @@ const buildTreeStructure = (files) => {
           type: !isLast ? "folder" : "file",
           ext: ext,
           children: isLast ? undefined : [],
-          // 仅第一层文件夹默认展开，其他层级默认收起
           expanded: isFirstLevel && !isLast ? true : false,
         };
         current.children?.push(newNode);
@@ -79,6 +75,8 @@ const buildTreeStructure = (files) => {
 
   return root.children || [];
 };
+
+// 选择文件夹（保持不变）
 const selectFolder = () => {
   const input = document.createElement("input");
   input.type = "file";
@@ -86,7 +84,7 @@ const selectFolder = () => {
   input.onchange = (e) => {
     const target = e.target;
     if (target && target.files) {
-      const files = Array.from(target.files); // FileList → Array<File>
+      const files = Array.from(target.files);
       const tree = buildTreeStructure(files);
       items.value = tree;
     }
@@ -94,41 +92,32 @@ const selectFolder = () => {
   input.click();
 };
 
-//选中文件
+// 选中文件（保持不变）
 const onItemSelected = (item) => {
-  // 判断选中的是文件（非文件夹且有 File 对象）
   if (item.type === "file" && item.file) {
-    selectedFileName.value = item.name; // 保存文件名
-    const file = item.file; // 获取原始 File 对象
+    selectedFileName.value = item.name;
+    const file = item.file;
 
-    // 用 FileReader 读取文件内容
     const reader = new FileReader();
-    // 读取文本内容（适用于代码、文本文件）
     reader.readAsText(file);
 
-    // 读取成功后更新内容
     reader.onload = (event) => {
       selectedFileContent.value = event.target.result;
-      console.log(selectedFileContent.value);
-      //传递给父组件
       emits("fileSelected", {
         name: selectedFileName.value,
         content: selectedFileContent.value,
       });
     };
 
-    // 读取失败处理
     reader.onerror = () => {
       selectedFileContent.value = `无法读取文件：${reader.error.message}`;
     };
   } else {
-    // 选中的是文件夹，清空内容
     selectedFileName.value = "";
     selectedFileContent.value = "";
   }
 };
 
-// 以下事件监听器你可以按需使用，目前只是占位打印
 const onItemChecked = (checkedItems) => {
   console.log("Checked:", checkedItems);
 };
@@ -146,20 +135,23 @@ const onItemExpanded = (expandedItem) => {
 
 <style scoped>
 .file-tree {
-  /* border: 1px solid red; */
   width: 100%;
   height: 100%;
-  overflow: auto;
+  overflow-x: hidden; /* 隐藏水平滚动条 */
+  overflow-y: auto; /* 保留垂直滚动 */
+  background-color: #1e1e1e;
 }
-.node-icon {
-  margin-right: 6px;
-  font-size: 16px;
+
+/* 新增树容器样式，用于限制宽度 */
+.tree-container {
+  width: 100%;
+  box-sizing: border-box;
+  padding-right: 8px; /* 预留一点空间避免紧贴边缘 */
 }
 </style>
 
 <style lang="scss">
 .tiny_horizontal_margin {
-  // border:1px solid blue;
   height: 20px !important;
   display: flex;
   flex-direction: column;
@@ -168,18 +160,61 @@ const onItemExpanded = (expandedItem) => {
 }
 
 .norem-tree {
-  .d-flex {
-    display: flex !important;
-    flex-direction: row !important;
-    justify-content: flex-start !important;
-    align-items: center !important;
-    span {
-      // border:1px solid blue;
-      display: inline-block;
-      height: 20px;
-      line-height: 20px;
-      font-size: 16px;
+  .chevron-right {
+    display: inline-block;
+    // border: 1px solid blue;
+    // width: 20px;
+  }
+  .tree-item-node-parent {
+    width: 100%;
+  }
+
+  // 确保树组件宽度继承父容器
+  width: 100%;
+
+  .tree-item {
+    // 限制每个树节点的最大宽度
+    width: 100%;
+    // width: 300px !important;
+    // border: 1px solid green;
+    .d-flex {
+      display: flex !important;
+      flex-direction: row !important;
+      justify-content: flex-start !important;
+      align-items: center !important;
+      width: 100%;
+
+      // 图标容器 - 固定宽度
+      .item-prepend-icon {
+        flex: 0 0 24px; /* 固定宽度，不伸缩 */
+        margin-right: 6px;
+      }
+
+      // 文件名容器 - 自适应剩余宽度
+      span {
+        display: inline-block;
+        height: 20px;
+        line-height: 20px;
+        font-size: 16px;
+        flex: 1; // 占满剩余空间
+        min-width: 0; // 允许被压缩到比内容还小
+        overflow: hidden; // 隐藏溢出部分
+        white-space: nowrap; // 禁止换行，保证一行显示
+        text-overflow: ellipsis; // 超出显示 ...
+        // border: 1px solid red; // 可删除，调试用
+        color: #b7b7b7;
+      }
     }
   }
+}
+
+.vue3-tree-vue .guide-line {
+  width: 12px;
+  min-width: 12px !important;
+  // border: 1px solid red;
+}
+
+.vue3-tree-vue .chevron-right {
+  color: #b7b7b7;
 }
 </style>

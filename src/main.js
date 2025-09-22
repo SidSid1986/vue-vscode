@@ -2,7 +2,7 @@
  * @Author: Sid Li
  * @Date: 2025-08-06 17:13:35
  * @LastEditors: Sid Li
- * @LastEditTime: 2025-09-20 10:09:20
+ * @LastEditTime: 2025-09-22 10:49:52
  * @FilePath: \vue-vscode-git\src\main.js
  * @Description:
  */
@@ -22,6 +22,7 @@ import "@/styles/free-icons/iconfont.css";
 import router from "@/router/index.js";
 
 import store from "@/store";
+import "@/styles/Normalize.css";
 
 // import useLocalStorageListener from "@/utils/localstorageListener";
 // 引入rem适配

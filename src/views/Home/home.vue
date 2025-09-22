@@ -77,8 +77,8 @@ const startTerminalHeight = ref(0); // 拖拽起始时 terminal 高度（px）
 // 宽度相关
 const containerRef = ref(null);
 const fileContentRef = ref(null);
-const leftPanelWidth = ref("25vw"); // 左侧面板宽度
-const rightPanelWidth = ref("75vw"); // 右侧面板宽度
+const leftPanelWidth = ref("15vw"); // 左侧面板宽度
+const rightPanelWidth = ref("85vw"); // 右侧面板宽度
 const isHorizontalDragging = ref(false);
 
 // 水平拖拽相关变量
@@ -155,7 +155,7 @@ const stopDrag = () => {
   document.removeEventListener("mouseup", stopDrag);
 };
 
-// 开始水平拖拽（左右面板的拖拽） 
+// 开始水平拖拽（左右面板的拖拽）
 const startHorizontalDrag = (e) => {
   if (!containerRef.value) return;
 
@@ -173,7 +173,7 @@ const startHorizontalDrag = (e) => {
   e.preventDefault();
 };
 
-// 水平拖拽中：计算新的左右面板宽度  
+// 水平拖拽中：计算新的左右面板宽度
 const onHorizontalMouseMove = (e) => {
   if (!isHorizontalDragging.value) return;
 
@@ -191,7 +191,7 @@ const onHorizontalMouseMove = (e) => {
 
   const newRightWidthVw = 100 - newLeftWidthVw;
 
-  //  基于像素做更严格的最小宽度限制 
+  //  基于像素做更严格的最小宽度限制
   /*
   const currentLeftPx = (newLeftWidthVw / 100) * containerWidth;
   const currentRightPx = (newRightWidthVw / 100) * containerWidth;
@@ -279,7 +279,8 @@ onUnmounted(() => {
 
 .file-content {
   height: 100vh;
-  overflow: auto;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .code-content {
@@ -297,7 +298,7 @@ onUnmounted(() => {
 
 .drag-container-horizontal {
   width: 8px;
-  background-color: transparent;
+  background-color: #1e1e1e;
   cursor: ew-resize;
   user-select: none;
   position: relative;
