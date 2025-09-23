@@ -79,6 +79,7 @@ import Terminal from "@/components/Terminal.vue";
 
 //  （leftPanel + rightPanel）总宽度 = 100 - 3 - 0.4 = 96.6vw
 const DYNAMIC_TOTAL_WIDTH_VW = 96.6;
+const previousLeftWidthVw = ref(15); // 默认值 15，万一从未记录过，也合理
 
 //  文件内容
 const oneFileName = ref("");
@@ -215,34 +216,39 @@ const startHorizontalDrag = (e) => {
 };
 // 水平拖拽中：计算新的左右面板宽度
 const onHorizontalMouseMove = (e) => {
-  // 如果当前没有在拖拽中（比如鼠标移出后误触发），直接退出，不做任何处理
   if (!isHorizontalDragging.value) return;
 
-  // 计算鼠标从按下到当前移动了多少像素（deltaX > 0 表示向右，deltaX < 0 表示向左）
   const deltaX = e.clientX - startX.value;
-
-  // 再次获取容器，以及它的实际宽度（像素），用于将鼠标移动距离换算成百分比宽度
   const container = containerRef.value;
   const containerWidth = container.clientWidth;
 
-  //  计算新的左侧面板宽度（newLeftWidthVw）：
-  // 从起始宽度 startLeftWidthVw.value（比如 15）开始，
-  // 加上鼠标移动距离 deltaX 所对应的百分比变化：
-  //   (deltaX / containerWidth) * 100 → 是鼠标横向移动的百分比
-  let newLeftWidthVw = startLeftWidthVw.value + (deltaX / containerWidth) * 100;
+  // 1. 计算原始的拖拽后宽度（可能 <10，可能很大）
+  let rawNewLeftWidthVw =
+    startLeftWidthVw.value + (deltaX / containerWidth) * 100;
 
-  //  限制 newLeftWidthVw 的范围在 [0, 96.6] 之间：
-  // 为什么是 96.6？
-  // 因为整个容器是 100vw，但其中 3vw 是左侧图标，0.4vw 是拖拽把手 → 剩下动态分配的宽度只有 96.6vw
-  // 所以 leftPanelWidth 最小可以是 0vw，最大只能是 96.6vw
-  newLeftWidthVw = Math.max(0, Math.min(96.6, newLeftWidthVw));
+  // 2. 限制右侧最小宽度为 15vw → 即左侧最大为 81.6vw
+  const MIN_RIGHT_WIDTH_VW = 15;
+  const MAX_LEFT_WIDTH_VW = DYNAMIC_TOTAL_WIDTH_VW - MIN_RIGHT_WIDTH_VW; // 96.6 - 15 = 81.6
 
-  //  更新左侧面板宽度（动态部分）：使用 vw 单位，保留 4 位小数避免频繁触发更新
+  // 先限制左侧最大宽度，避免右侧小于 15
+  rawNewLeftWidthVw = Math.min(MAX_LEFT_WIDTH_VW, rawNewLeftWidthVw);
+
+  // 3. 定义左侧最小可见宽度为 10vw
+  const MIN_LEFT_VISIBLE_VW = 10;
+
+  let newLeftWidthVw;
+
+  // 4. 核心交互逻辑：卡住 or 吸附隐藏
+  if (rawNewLeftWidthVw < MIN_LEFT_VISIBLE_VW - 7) {
+    //  继续往左拖拽，导致宽度 < 3 → 触发吸附隐藏，用力拖拽
+    newLeftWidthVw = 0; // 左侧隐藏
+  } else {
+    //  限制最小为 10，实现 “卡住” 效果（拖到 10 就停住）
+    newLeftWidthVw = Math.max(MIN_LEFT_VISIBLE_VW, rawNewLeftWidthVw);
+  }
+
+  // 5. 更新左右面板宽度
   leftPanelWidth.value = `${newLeftWidthVw.toFixed(4)}vw`;
-
-  //   更新右侧面板宽度（动态部分）：
-  // 因为 left + right 必须严格等于 96.6vw，所以：
-  // right = 96.6 - left
   rightPanelWidth.value = `${(DYNAMIC_TOTAL_WIDTH_VW - newLeftWidthVw).toFixed(
     4
   )}vw`;
@@ -288,16 +294,49 @@ const closeTerminalFunc = () => {
 };
 
 const openFileContent = () => {
-  leftPanelWidth.value == "15vw"
-    ? (leftPanelWidth.value = "0vw")
-    : (leftPanelWidth.value = "15vw");
-  if (leftPanelWidth.value == "0vw") {
+  console.log("当前 leftPanelWidth.value:", leftPanelWidth.value);
+
+  // ✅ 新增：专门处理拖拽导致的 0.0000vw 情况
+  if (leftPanelWidth.value === "0.0000vw") {
+    //  1：用户拖拽直接到 0.0000vw（不是点击按钮隐藏的）
+    // 直接恢复成默认的 15vw，不记录、不隐藏、不走其他逻辑
+    console.log("检测到拖拽导致的 0.0000vw，直接恢复为默认 15vw");
+
+    leftPanelWidth.value = "15.00vw";
+    rightPanelWidth.value = "81.60vw";
+  } else if (leftPanelWidth.value !== "0vw") {
+    //   2：左侧是显示的（比如 "15vw"、"18.5vw"、"20vw" 等正常值）
+    // 正常逻辑：记录当前宽度，然后隐藏成 "0vw"
+
+    console.log("当前是显示状态，记录宽度然后隐藏");
+
+    const currentWidthStr = leftPanelWidth.value;
+    let currentWidthVw = 0;
+
+    if (currentWidthStr.endsWith("vw")) {
+      currentWidthVw = parseFloat(currentWidthStr);
+    } else {
+      currentWidthVw = 15; // 安全默认值
+    }
+
+    // 记录当前宽度，供之后恢复
+    previousLeftWidthVw.value = currentWidthVw;
+
+    // 隐藏左侧面板
+    leftPanelWidth.value = "0vw";
     rightPanelWidth.value = "96.6vw";
-  } else if (leftPanelWidth.value == "15vw") {
-    rightPanelWidth.value = "81.6vw";
+  } else {
+    // 🔸 情况 3：左侧是隐藏的（leftPanelWidth === "0vw"）
+    // 正常逻辑：恢复之前记录的宽度
+
+    console.log("恢复之前记录的宽度:", previousLeftWidthVw.value);
+
+    const prevWidthVw = previousLeftWidthVw.value || 15; // 如果没记录过，用 15
+    leftPanelWidth.value = `${prevWidthVw.toFixed(2)}vw`; // 例如 "18.50vw"
+    const rightWidthVw = DYNAMIC_TOTAL_WIDTH_VW - prevWidthVw;
+    rightPanelWidth.value = `${rightWidthVw.toFixed(2)}vw`; // 例如 "78.10vw"
   }
 };
-
 const handleChangeResponseJson = () => {
   // 返回内容值，根据业务增加
 };
