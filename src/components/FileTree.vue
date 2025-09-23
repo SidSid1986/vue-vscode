@@ -1,6 +1,86 @@
 <template>
-  <div class="file-tree">
-    <button style="color: red" @click="selectFolder">测试选择文件夹</button>
+  <div class="file-tree file-tree-dark">
+    <!-- #45A9F9 -->
+    <div v-if="items.length === 0" class="open-btn">
+      <el-button type="primary" @click="selectFolder">
+        测试选择文件夹
+      </el-button>
+    </div>
+    <div v-if="items.length === 0" class="open-btn">
+      <el-button type="primary" @click="selectFolder">
+        测试选择文件夹
+      </el-button>
+    </div>
+    <div v-if="items.length === 0" class="open-btn">
+      <el-button type="primary" @click="selectFolder">
+        测试选择文件夹
+      </el-button>
+    </div>
+    <div v-if="items.length === 0" class="open-btn">
+      <el-button type="primary" @click="selectFolder">
+        测试选择文件夹
+      </el-button>
+    </div>
+    <div v-if="items.length === 0" class="open-btn">
+      <el-button type="primary" @click="selectFolder">
+        测试选择文件夹
+      </el-button>
+    </div>
+    <div v-if="items.length === 0" class="open-btn">
+      <el-button type="primary" @click="selectFolder">
+        测试选择文件夹
+      </el-button>
+    </div>
+    <div v-if="items.length === 0" class="open-btn">
+      <el-button type="primary" @click="selectFolder">
+        测试选择文件夹
+      </el-button>
+    </div>
+    <div v-if="items.length === 0" class="open-btn">
+      <el-button type="primary" @click="selectFolder">
+        测试选择文件夹
+      </el-button>
+    </div>
+    <div v-if="items.length === 0" class="open-btn">
+      <el-button type="primary" @click="selectFolder">
+        测试选择文件夹
+      </el-button>
+    </div>
+    <div v-if="items.length === 0" class="open-btn">
+      <el-button type="primary" @click="selectFolder">
+        测试选择文件夹
+      </el-button>
+    </div>
+    <div v-if="items.length === 0" class="open-btn">
+      <el-button type="primary" @click="selectFolder">
+        测试选择文件夹
+      </el-button>
+    </div>
+    <div v-if="items.length === 0" class="open-btn">
+      <el-button type="primary" @click="selectFolder">
+        测试选择文件夹
+      </el-button>
+    </div>
+    <div v-if="items.length === 0" class="open-btn">
+      <el-button type="primary" @click="selectFolder">
+        测试选择文件夹
+      </el-button>
+    </div>
+    <div v-if="items.length === 0" class="open-btn">
+      <el-button type="primary" @click="selectFolder">
+        测试选择文件夹
+      </el-button>
+    </div>
+    <div v-if="items.length === 0" class="open-btn">
+      <el-button type="primary" @click="selectFolder">
+        测试选择文件夹
+      </el-button>
+    </div>
+    <div v-if="items.length === 0" class="open-btn">
+      <el-button type="primary" @click="selectFolder">
+        测试选择文件夹
+      </el-button>
+    </div>
 
     <div v-if="items.length > 0" class="tree-container">
       <vue3-tree-vue
@@ -133,7 +213,7 @@ const onItemExpanded = (expandedItem) => {
 };
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 .file-tree {
   width: 100%;
   height: 100%;
@@ -144,15 +224,24 @@ const onItemExpanded = (expandedItem) => {
 
 /* 新增树容器样式，用于限制宽度 */
 .tree-container {
+  margin-top: 20px;
   width: 100%;
   box-sizing: border-box;
   padding-right: 8px; /* 预留一点空间避免紧贴边缘 */
+}
+
+.open-btn {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  margin-top: 50px;
 }
 </style>
 
 <style lang="scss">
 .tiny_horizontal_margin {
-  height: 20px !important;
+  height: 30px !important;
+  // border:1px solid red;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -183,6 +272,8 @@ const onItemExpanded = (expandedItem) => {
       justify-content: flex-start !important;
       align-items: center !important;
       width: 100%;
+      height: 30px;
+      // border:1px solid yellow;
 
       // 图标容器 - 固定宽度
       .item-prepend-icon {
@@ -193,8 +284,8 @@ const onItemExpanded = (expandedItem) => {
       // 文件名容器 - 自适应剩余宽度
       span {
         display: inline-block;
-        height: 20px;
-        line-height: 20px;
+        height: 30px;
+        line-height: 30px;
         font-size: 16px;
         flex: 1; // 占满剩余空间
         min-width: 0; // 允许被压缩到比内容还小
@@ -216,5 +307,87 @@ const onItemExpanded = (expandedItem) => {
 
 .vue3-tree-vue .chevron-right {
   color: #b7b7b7;
+}
+
+//scroll
+.file-tree-dark {
+  border: 2px solid red;
+
+  /* 滚动条整体 */
+  ::-webkit-scrollbar {
+    width: 20px;
+    height: 20px;
+  }
+
+  /* 滚动条轨道 */
+  ::-webkit-scrollbar-track {
+    background: #292a2b;
+    border-radius: 0;
+  }
+
+  /* 滚动条滑块 */
+  ::-webkit-scrollbar-thumb {
+    background-color: #313438;
+    border-radius: 0;
+    border: 2px solid transparent;
+    background-clip: content-box;
+    transition: background-color 0.2s ease; /* 添加过渡效果 */
+  }
+
+  /* 滚动条滑块悬停状态 */
+  ::-webkit-scrollbar-thumb:hover {
+    background-color: #757575 !important;
+    cursor: pointer;
+  }
+
+  /* 滚动条滑块激活状态（点击时） */
+  ::-webkit-scrollbar-thumb:active {
+    background-color: #757575 !important; /* 使用稍暗的红色区分激活状态 */
+  }
+
+  /* 滚动条角落 */
+  ::-webkit-scrollbar-corner {
+    background: #292a2b; /* 与轨道颜色保持一致 */
+  }
+}
+
+.file-tree-light {
+  border: 1px solid #e0e0e0;
+  /* 滚动条整体 */
+  ::-webkit-scrollbar {
+    width: 20px;
+    height: 20px;
+  }
+
+  /* 滚动条轨道 */
+  ::-webkit-scrollbar-track {
+    background: #ffffff;
+    border-radius: 0;
+  }
+
+  /* 滚动条滑块 */
+  ::-webkit-scrollbar-thumb {
+    background-color: #757575;
+    border-radius: 0;
+    border: 2px solid transparent;
+    background-clip: content-box;
+    transition: background-color 0.2s ease; /* 添加过渡效果 */
+  }
+
+  /* 滚动条滑块悬停状态 */
+  ::-webkit-scrollbar-thumb:hover {
+    background-color: #757575 !important;
+    cursor: pointer;
+  }
+
+  /* 滚动条滑块激活状态（点击时） */
+  ::-webkit-scrollbar-thumb:active {
+    background-color: #757575 !important; /* 使用稍暗的红色区分激活状态 */
+  }
+
+  /* 滚动条角落 */
+  ::-webkit-scrollbar-corner {
+    background: #292a2b; /* 与轨道颜色保持一致 */
+  }
 }
 </style>

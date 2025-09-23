@@ -22,6 +22,7 @@ import router from "@/router/index.js";
 import store from "@/store";
 import "@/styles/Normalize.css";
 
+
 // import useLocalStorageListener from "@/utils/localstorageListener";
 // 引入rem适配
 import "@/utils/rem.js";
