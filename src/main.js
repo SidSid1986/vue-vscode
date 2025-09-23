@@ -2,7 +2,7 @@
  * @Author: Sid Li
  * @Date: 2025-08-06 17:13:35
  * @LastEditors: Sid Li
- * @LastEditTime: 2025-09-22 10:49:52
+ * @LastEditTime: 2025-09-23 10:17:42
  * @FilePath: \vue-vscode-git\src\main.js
  * @Description:
  */
@@ -16,8 +16,6 @@ import "@/assets/icon/iconfont.css";
 
 // import "@/styles/element/index.scss";
 import * as ElementPlusIconsVue from "@element-plus/icons-vue";
-
-import "@/styles/free-icons/iconfont.css";
 
 import router from "@/router/index.js";
 

@@ -6,6 +6,20 @@
   "description": "",
   "glyphs": [
     {
+      "icon_id": "1629871",
+      "name": "搜索",
+      "font_class": "icon-test",
+      "unicode": "e60d",
+      "unicode_decimal": 58893
+    },
+    {
+      "icon_id": "1629872",
+      "name": "文件夹",
+      "font_class": "icon-test1",
+      "unicode": "e60e",
+      "unicode_decimal": 58894
+    },
+    {
       "icon_id": "14105491",
       "name": "关闭",
       "font_class": "guanbi",
