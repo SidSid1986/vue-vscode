@@ -1,52 +1,67 @@
 <template>
-  <div class="container" ref="containerRef">
-    <!-- 左侧：文件树，固定 25% 宽度 -->
-    <div
-      class="file-content"
-      ref="fileContentRef"
-      :style="{ width: leftPanelWidth }"
-    >
-      <FileTree @fileSelected="fileSelected" />
-    </div>
+  <!-- 最外层布局容器，100vw / 100vh，flex column -->
+  <div class="app-wrapper">
+    <!--  顶部工具栏：黄色，固定 50px -->
+    <div class="global-toolbar">顶部工具栏</div>
 
-    <!-- 左右拖拽手柄 -->
-    <div
-      class="drag-container-horizontal"
-      @mousedown="startHorizontalDrag"
-      :class="{ dragging: isHorizontalDragging }"
-    ></div>
+    <!--  container（占满剩余所有高度） -->
+    <div class="container" ref="containerRef">
+      <!-- 左侧粉色区域（文件操作图标区） -->
+      <div class="left-icon-area">📁 文件操作图标区</div>
 
-    <!-- 右侧：代码内容 + 拖拽 + Terminal，宽度 75% -->
-    <div
-      class="code-content"
-      ref="codeContentRef"
-      :style="{ width: rightPanelWidth }"
-    >
-      <!-- 上方：代码展示区，高度动态变化 -->
-      <div class="editor-content" :style="{ height: editorHeight }">
-        <MonacoCom
-          ref="jsonComponents"
-          :model-value="strJson"
-          @update:model-value="handleChangeResponseJson"
-        />
+      <!-- 左侧文件树 -->
+      <div
+        class="file-content"
+        ref="fileContentRef"
+        :style="{ width: leftPanelWidth }"
+      >
+        <FileTree @fileSelected="fileSelected" />
       </div>
 
-      <!-- 中间：拖拽手柄 -->
-      <div class="drag-container">
-        <div
-          class="resize-handle"
-          @mousedown="startDrag"
-          :class="{ dragging: isDragging }"
-        ></div>
+      <!--  左右拖拽手柄 -->
+      <div
+        class="drag-container-horizontal"
+        @mousedown="startHorizontalDrag"
+        :class="{ dragging: isHorizontalDragging }"
+      ></div>
 
-        <!-- 下方：Terminal 组件，高度动态变化 -->
-        <div class="terminal-container" :style="{ height: terminalHeight }">
-          <Terminal
-            :terminalContentHeight="terminalContentHeight"
-            @closeTerminalFunc="closeTerminalFunc"
+      <!--  右侧代码 + Terminal 区域 -->
+      <div
+        class="code-content"
+        ref="codeContentRef"
+        :style="{ width: rightPanelWidth }"
+      >
+        <!-- 上方：代码展示区，高度动态变化 -->
+        <div class="editor-content" :style="{ height: editorHeight }">
+          <MonacoCom
+            ref="jsonComponents"
+            :model-value="strJson"
+            @update:model-value="handleChangeResponseJson"
           />
         </div>
+
+        <!-- 中间：拖拽手柄 -->
+        <div class="drag-container">
+          <div
+            class="resize-handle"
+            @mousedown="startDrag"
+            :class="{ dragging: isDragging }"
+          ></div>
+
+          <!-- 下方：Terminal 组件，高度动态变化 -->
+          <div class="terminal-container" :style="{ height: terminalHeight }">
+            <Terminal
+              :terminalContentHeight="terminalContentHeight"
+              @closeTerminalFunc="closeTerminalFunc"
+            />
+          </div>
+        </div>
       </div>
+    </div>
+
+    <!-- ✅ 3. 新增：底部工具栏：蓝色，固定 30px -->
+    <div class="global-status-bar">
+      🧩 底部工具栏（蓝色，比如状态/日志/Git/行号）
     </div>
   </div>
 </template>
@@ -267,24 +282,65 @@ onUnmounted(() => {
 </script>
 
 <style scoped lang="scss">
+/* 最外层：100vw / 100vh，column 布局 */
+.app-wrapper {
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: sans-serif;
+  overflow: hidden;
+}
+
+/* 1. 顶部工具栏：黄色，固定 50px */
+.global-toolbar {
+  height: 50px;
+  background-color: blue;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  font-weight: bold;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+}
+
+/* 2. 你原来的 .container，占满剩余高度 */
 .container {
   display: flex;
   flex-direction: row;
-  width: 100vw;
-  height: 100vh;
+  width: 100%;
+  height: 100%; /* 占满除去顶部和底部之后的所有高度 */
   overflow: hidden;
   user-select: none;
   -webkit-user-select: none;
 }
 
+/* 3. 你新增的：左侧粉色区域（文件操作图标区） */
+.left-icon-area {
+  width: 60px;
+  background-color: pink;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  color: #333;
+  flex-shrink: 0;
+  z-index: 1;
+}
+
+/* 以下是你原来的内部样式，全部原样保留，未改动 */
 .file-content {
-  height: 100vh;
+  height: 100%;
   overflow-y: auto;
   overflow-x: hidden;
 }
 
 .code-content {
-  height: 100vh;
+  height: 100%;
   position: relative;
   overflow: hidden;
 }
@@ -293,13 +349,12 @@ onUnmounted(() => {
   width: 100%;
   overflow: auto;
   box-sizing: border-box;
-  // background: #f6f6f6;
-  background-color: #1e1e1e;
+  background-color: #292a2b;
 }
 
 .drag-container-horizontal {
   width: 8px;
-  background-color: #1e1e1e;
+  background-color: #242526;
   cursor: ew-resize;
   user-select: none;
   position: relative;
@@ -328,7 +383,7 @@ onUnmounted(() => {
   width: 100%;
   box-sizing: border-box;
   overflow: hidden;
-  background-color: #1e1e1e;
+  background-color: #292a2b;
 }
 
 .resize-handle {
@@ -355,9 +410,20 @@ onUnmounted(() => {
   height: 8px;
 }
 
-/* 防止文本选择与拖拽冲突 */
 * {
   -webkit-user-drag: none;
   touch-action: none;
+}
+
+/* ✅ 4. 新增：底部工具栏：蓝色，固定 30px */
+.global-status-bar {
+  height: 30px;
+  background-color: blue; /* 你要求的蓝色 */
+  color: white;
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  font-size: 12px;
+  z-index: 1000;
 }
 </style>

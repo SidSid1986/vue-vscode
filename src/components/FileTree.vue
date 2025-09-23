@@ -139,7 +139,7 @@ const onItemExpanded = (expandedItem) => {
   height: 100%;
   overflow-x: hidden; /* 隐藏水平滚动条 */
   overflow-y: auto; /* 保留垂直滚动 */
-  background-color: #1e1e1e;
+  background-color: #242526;
 }
 
 /* 新增树容器样式，用于限制宽度 */
