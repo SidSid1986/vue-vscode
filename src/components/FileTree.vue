@@ -9,12 +9,12 @@
     </div>
 
     <div v-if="items.length > 0" class="tree-container">
+      <!-- @onSelect="onItemSelected" -->
       <vue3-tree-vue
         :items="items"
         :isCheckable="false"
         :hideGuideLines="false"
         @onCheck="onItemChecked"
-        @onSelect="onItemSelected"
         @onExpand="onItemExpanded"
         @dropValidator="onBeforeItemDropped"
         class="norem-tree"
@@ -27,6 +27,15 @@
             :isOpen="treeItem.expanded || false"
             :size="20"
           />
+        </template>
+        <template v-slot:item-name="treeItem">
+          <span
+            @click="handleClick(treeItem)"
+            @dblclick="handleDoubleClick(treeItem)"
+            class="tree-node-name"
+          >
+            {{ treeItem.name }}
+          </span>
         </template>
       </vue3-tree-vue>
     </div>
@@ -44,8 +53,10 @@ const items = ref([]);
 const emits = defineEmits(["fileSelected"]);
 const selectedFileName = ref("");
 const selectedFileContent = ref("");
-
-// 构建树结构（保持不变）
+// 防抖变量
+const clickTimer = ref(null);
+const isDoubleClick = ref(false);
+// 构建树结构（
 const buildTreeStructure = (files) => {
   const root = { name: "root", children: [] };
 
@@ -82,7 +93,7 @@ const buildTreeStructure = (files) => {
   return root.children || [];
 };
 
-// 选择文件夹（保持不变）
+// 选择文件夹
 const selectFolder = () => {
   const input = document.createElement("input");
   input.type = "file";
@@ -98,7 +109,7 @@ const selectFolder = () => {
   input.click();
 };
 
-// 选中文件（保持不变）
+// 选中文件(原来逻辑，备份)
 const onItemSelected = (item) => {
   if (item.type === "file" && item.file) {
     selectedFileName.value = item.name;
@@ -124,6 +135,117 @@ const onItemSelected = (item) => {
   }
 };
 
+// 处理点击（单击）
+const handleClick = (treeItem) => {
+  if (isDoubleClick.value) {
+    // 如果是双击，则忽略单击
+    isDoubleClick.value = false; //  重置 isDoubleClick
+    clearTimeout(clickTimer.value); //  清除残留的定时器
+    return;
+  }
+
+  // 300ms 后判断是否是双击
+  clickTimer.value = setTimeout(() => {
+    if (!isDoubleClick.value) {
+      // 300ms 内没有第二次点击，执行单击逻辑
+      onSingleClick(treeItem);
+    }
+    clickTimer.value = null; //  清除定时器引用
+    isDoubleClick.value = false; //  重置 isDoubleClick
+  }, 300);
+};
+
+// 处理双击
+// 处理双击
+const handleDoubleClick = (treeItem) => {
+  clearTimeout(clickTimer.value); // 清除单击的定时器
+  isDoubleClick.value = true; // 标记为双击
+  onDoubleClick(treeItem); // 执行双击逻辑
+
+  //  双击后，确保下一次单击能正常执行
+  setTimeout(() => {
+    isDoubleClick.value = false; // 300ms 后重置 isDoubleClick
+  }, 300);
+};
+
+// 单击逻辑（原来 onItemSelected 的逻辑）
+const onSingleClick = (item) => {
+  console.log("单击:", item);
+
+  if (item.type === "file" && item.file) {
+    // 单击文件：读取文件内容
+    selectedFileName.value = item.name;
+    const file = item.file;
+
+    const reader = new FileReader();
+    reader.readAsText(file);
+
+    reader.onload = (event) => {
+      selectedFileContent.value = event.target.result;
+      emits("fileSelected", {
+        name: selectedFileName.value,
+        content: selectedFileContent.value,
+      });
+    };
+
+    reader.onerror = () => {
+      selectedFileContent.value = `无法读取文件：${reader.error.message}`;
+    };
+  } else if (item.type === "folder") {
+    // 单击文件夹：切换展开/折叠状态
+    console.log("单击文件夹，切换展开/折叠状态");
+    // item.expanded = !item.expanded;
+    toggleFolderExpanded(item);
+  }
+};
+
+const toggleFolderExpanded = (folderItem) => {
+  // 递归查找并修改当前文件夹的 expanded 状态
+  const updateExpanded = (items, targetId) => {
+    for (const item of items) {
+      if (item.id === targetId) {
+        item.expanded = !item.expanded; // 切换展开状态
+        return true; // 找到并修改成功
+      }
+      if (item.children) {
+        const found = updateExpanded(item.children, targetId);
+        if (found) return true;
+      }
+    }
+    return false;
+  };
+
+  updateExpanded(items.value, folderItem.id);
+};
+// 双击逻辑（原来 onItemDoubleClick 的逻辑）
+const onDoubleClick = (treeItem) => {
+  console.log("双击:", treeItem);
+
+  if (treeItem.type === "file" && treeItem.file) {
+    // 双击文件：读取文件内容
+    selectedFileName.value = treeItem.name;
+    const file = treeItem.file;
+
+    const reader = new FileReader();
+    reader.readAsText(file);
+
+    reader.onload = (event) => {
+      selectedFileContent.value = event.target.result;
+      emits("fileSelected", {
+        name: selectedFileName.value,
+        content: selectedFileContent.value,
+      });
+      // 你可以在这里额外执行双击的操作（比如打开编辑器）
+    };
+
+    reader.onerror = () => {
+      selectedFileContent.value = `无法读取文件：${reader.error.message}`;
+    };
+  } else if (treeItem.type === "folder") {
+    // 双击文件夹：不执行任何操作（直接忽略）
+    console.log("双击文件夹，不做任何操作");
+  }
+};
 const onItemChecked = (checkedItems) => {
   console.log("Checked:", checkedItems);
 };
