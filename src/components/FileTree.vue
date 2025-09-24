@@ -26,6 +26,8 @@
             :fileType="treeItem.type || 'file'"
             :isOpen="treeItem.expanded || false"
             :size="20"
+            @click="handleClick(treeItem)"
+            @dblclick="handleDoubleClick(treeItem)"
           />
         </template>
         <template v-slot:item-name="treeItem">
@@ -48,6 +50,7 @@ import { ref } from "vue";
 import FileIcon from "@/components/FileIcon.vue";
 import Vue3TreeVue from "vue3-tree-vue";
 import "vue3-tree-vue/dist/style.css";
+import { id } from "element-plus/es/locales.mjs";
 
 const items = ref([]);
 const emits = defineEmits(["fileSelected"]);
@@ -185,6 +188,7 @@ const onSingleClick = (item) => {
       emits("fileSelected", {
         name: selectedFileName.value,
         content: selectedFileContent.value,
+        id: item.id,
       });
     };
 

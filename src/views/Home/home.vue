@@ -38,6 +38,11 @@
         ref="codeContentRef"
         :style="{ width: rightPanelWidth }"
       >
+        <div class="code-tab">
+          <div v-for="item in selectedFileArr" :key="item.id">
+            <span>{{ item.oneFileName }}</span>
+          </div>
+        </div>
         <!-- 上方：代码展示区，高度动态变化 -->
         <div class="editor-content" :style="{ height: editorHeight }">
           <MonacoCom
@@ -115,10 +120,18 @@ const DYNAMIC_TOTAL_WIDTH_VW = 96.6;
 const previousLeftWidthVw = ref(15); // 默认值 15，万一从未记录过，也合理
 
 //  文件内容
-const oneFileName = ref("");
-const strJson = ref(
-  "# Python 示例代码\nprint('Hello Python!')\nresult = 1 + 2\nprint('计算结果：', result)"
-);
+// const oneFileName = ref("");
+// const strJson = ref(
+//   "# Python 示例代码\nprint('Hello Python!')\nresult = 1 + 2\nprint('计算结果：', result)"
+// );
+
+const selectedFile = ref({
+  oneFileName: "",
+  strJson: "",
+  seleced: false,
+  id: "",
+});
+const selectedFileArr = ref([]);
 
 // 高度相关
 const codeContentRef = ref(null);
@@ -145,8 +158,16 @@ const startLeftWidthVw = ref(0); //拖拽开始时，左侧面板的宽度
 // 文件选择  ========
 const fileSelected = (file) => {
   console.log("File selected:", file);
-  oneFileName.value = file.name;
-  strJson.value = file.content;
+  // oneFileName.value = file.name;
+  // strJson.value = file.content;
+  selectedFile.value.oneFileName = file.name;
+  selectedFile.value.strJson = file.content;
+  selectedFile.value.id = file.id;
+  selectedFile.value.seleced = false;
+
+  selectedFileArr.value.push(selectedFile.value);
+
+  console.log(selectedFileArr.value);
 };
 
 // 开始垂直拖拽（编辑器和终端之间的拖拽）
@@ -178,16 +199,12 @@ const handleMouseMove = (e) => {
   if (!container) return;
 
   const containerHeight = container.clientHeight;
-  const deltaY = startY.value - e.clientY; //  startY - e.clientY
+  const deltaY = startY.value - e.clientY;
 
-  // newTerminalHeight = 初始 Terminal 高度 + deltaY
-  // newEditorHeight = 初始总高度 - newTerminalHeight
   let newTerminalHeightPx = startTerminalHeight.value + deltaY;
 
-  // 容器总高度
   const totalHeight = containerHeight;
 
-  // 限制最小高度
   const minTerminalHeight = 100;
   const minEditorHeight = 100;
 
@@ -198,13 +215,16 @@ const handleMouseMove = (e) => {
 
   const newEditorHeightPx = totalHeight - newTerminalHeightPx;
 
-  // 设置高度（px）
+  // ✅ 关键：减去 code-tab 的高度 4vh（和 onMounted 保持一致！）
+  const codeTabHeightVh = 4;
+  const codeTabHeightPx = (codeTabHeightVh / 100) * containerHeight;
+
+  const finalEditorHeightPx = newEditorHeightPx - codeTabHeightPx;
+
   terminalHeight.value = `${newTerminalHeightPx}px`;
-
   terminalContentHeight.value = `${newTerminalHeightPx - 40}px`;
-  editorHeight.value = `${newEditorHeightPx}px`;
+  editorHeight.value = `${finalEditorHeightPx - 1}px`; //  减去 1px 视觉补偿
 };
-
 // 停止垂直拖拽
 const stopDrag = () => {
   isDragging.value = false;
@@ -376,21 +396,24 @@ const handleChangeResponseJson = () => {
 
 onMounted(() => {
   nextTick(() => {
-    // 初始化高度
     const containerHeight = codeContentRef.value?.clientHeight || 600;
+    const codeTabHeightVh = 4;
+    const codeTabHeightPx = (codeTabHeightVh / 100) * containerHeight;
+
     const initialTerminalHeight = containerHeight * 0.3; // 30%
-    const initialEditorHeight = containerHeight - initialTerminalHeight;
+    const initialEditorHeight =
+      containerHeight - initialTerminalHeight - codeTabHeightPx; // ✅ 减去 code-tab 高度
 
     terminalHeight.value = `${initialTerminalHeight}px`;
     terminalContentHeight.value = `${initialTerminalHeight - 40}px`;
-    editorHeight.value = `${initialEditorHeight}px`;
+    editorHeight.value = `${initialEditorHeight - 1}px`; // ✅ 现在 editorHeight 不包含 4vh 了
   });
 });
 
 onUnmounted(() => {
   document.removeEventListener("mousemove", handleMouseMove);
   document.removeEventListener("mouseup", stopDrag);
-  document.removeEventListener("mousemove", handleHorizontalMouseMove);
+  // document.removeEventListener("mousemove", handleHorizontalMouseMove);
   document.removeEventListener("mouseup", stopHorizontalDrag);
 });
 </script>
@@ -456,7 +479,6 @@ onUnmounted(() => {
   }
 }
 
-/* 以下是你原来的内部样式，全部原样保留，未改动 */
 .file-content {
   height: 100%;
   overflow-y: auto;
@@ -467,13 +489,24 @@ onUnmounted(() => {
   height: 100%;
   position: relative;
   overflow: hidden;
+  box-sizing: border-box;
+  // border: 2px solid red;
+}
+
+.code-tab {
+  width: 100%;
+  height: 4vh;
+  background-color: green;
+  box-sizing: border-box;
 }
 
 .editor-content {
   width: 100%;
+  height: 100%;
   overflow: auto;
   box-sizing: border-box;
   background-color: #292a2b;
+  // border: 2px solid green;
 }
 
 .drag-container-horizontal {
@@ -509,6 +542,7 @@ onUnmounted(() => {
   box-sizing: border-box;
   overflow: hidden;
   background-color: #292a2b;
+  // border:1px solid red;
 }
 
 .resize-handle {
