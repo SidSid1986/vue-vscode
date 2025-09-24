@@ -3,7 +3,9 @@
   <div class="app-wrapper">
     <!--  顶部工具栏：黄色，固定 50px -->
     <div class="global-toolbar">
-      顶部工具栏{{ leftPanelWidth }}--{{ rightPanelWidth }}
+      <!-- 顶部工具栏{{ leftPanelWidth }}--{{ rightPanelWidth }} -->
+      <!-- <ToolMenu :menuData="menuData" /> -->
+      <ToolMenu />
     </div>
 
     <!--  container（占满剩余所有高度） -->
@@ -65,9 +67,7 @@
     </div>
 
     <!-- ✅ 3. 新增：底部工具栏：蓝色，固定 30px -->
-    <div class="global-status-bar">
-      🧩 底部工具栏（蓝色，比如状态/日志/Git/行号）
-    </div>
+    <div class="global-status-bar">🧩 底部工具栏</div>
   </div>
 </template>
 
@@ -76,6 +76,39 @@ import { ref, onMounted, onUnmounted, nextTick, computed } from "vue";
 import FileTree from "@/components/FileTree.vue";
 import MonacoCom from "@/components/MonacoCom.vue";
 import Terminal from "@/components/Terminal.vue";
+import ToolMenu from "@/components/ToolMenu.vue";
+
+const menuData = [
+  {
+    id: 1,
+    name: "文件",
+    show: false,
+    children: [
+      {
+        id: 11,
+        name: "打开文件夹",
+        children: [],
+      },
+      {
+        id: 12,
+        name: "打开文件",
+        children: [],
+      },
+    ],
+  },
+  {
+    id: 2,
+    name: "编辑",
+    show: false,
+    children: [
+      {
+        id: 22,
+        name: "查找",
+        children: [],
+      },
+    ],
+  },
+];
 
 //  （leftPanel + rightPanel）总宽度 = 100 - 3 - 0.4 = 96.6vw
 const DYNAMIC_TOTAL_WIDTH_VW = 96.6;
@@ -379,7 +412,8 @@ onUnmounted(() => {
 /* 1. 顶部工具栏：黄色，固定 50px */
 .global-toolbar {
   height: 50px;
-  background-color: blue;
+  // background-color: blue;
+  background-color: #222223;
   color: #ffffff;
   display: flex;
   align-items: center;
@@ -516,5 +550,46 @@ onUnmounted(() => {
   padding: 0 16px;
   font-size: 12px;
   z-index: 1000;
+}
+</style>
+
+<style lang="scss">
+.file-content {
+  /* 滚动条整体 */
+  ::-webkit-scrollbar {
+    width: 20px;
+    height: 20px;
+  }
+
+  /* 滚动条轨道 */
+  ::-webkit-scrollbar-track {
+    background: #292a2b;
+    border-radius: 0;
+  }
+
+  /* 滚动条滑块 */
+  ::-webkit-scrollbar-thumb {
+    background-color: #313438;
+    border-radius: 0;
+    border: 2px solid transparent;
+    background-clip: content-box;
+    transition: background-color 0.2s ease; /* 添加过渡效果 */
+  }
+
+  /* 滚动条滑块悬停状态 */
+  ::-webkit-scrollbar-thumb:hover {
+    background-color: #757575 !important;
+    cursor: pointer;
+  }
+
+  /* 滚动条滑块激活状态（点击时） */
+  ::-webkit-scrollbar-thumb:active {
+    background-color: #757575 !important; /* 使用稍暗的红色区分激活状态 */
+  }
+
+  /* 滚动条角落 */
+  ::-webkit-scrollbar-corner {
+    background: #292a2b; /* 与轨道颜色保持一致 */
+  }
 }
 </style>
