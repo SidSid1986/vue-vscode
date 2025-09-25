@@ -392,7 +392,7 @@ const closeTerminal = () => {
 // 生命周期
 onMounted(() => {
   initTerminal();
-  initWs();
+  // initWs();
   window.addEventListener("resize", handleResize);
 });
 

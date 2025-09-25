@@ -40,14 +40,14 @@
       >
         <div class="code-tab">
           <div v-for="item in selectedFileArr" :key="item.id">
-            <span>{{ item.oneFileName }}</span>
+            <span class="tab-item">{{ item.oneFileName }}</span>
           </div>
         </div>
         <!-- 上方：代码展示区，高度动态变化 -->
         <div class="editor-content" :style="{ height: editorHeight }">
           <MonacoCom
             ref="jsonComponents"
-            :model-value="strJson"
+            :model-value="selectedFile.strJson"
             @update:model-value="handleChangeResponseJson"
           />
         </div>
@@ -128,7 +128,7 @@ const previousLeftWidthVw = ref(15); // 默认值 15，万一从未记录过，�
 const selectedFile = ref({
   oneFileName: "",
   strJson: "",
-  seleced: false,
+  selected: false,
   id: "",
 });
 const selectedFileArr = ref([]);
@@ -159,16 +159,24 @@ const startLeftWidthVw = ref(0); //拖拽开始时，左侧面板的宽度
 const fileSelected = (file) => {
   console.log("File selected:", file);
 
-  // oneFileName.value = file.name;
-  // strJson.value = file.content;
-  selectedFile.value.oneFileName = file.name;
-  selectedFile.value.strJson = file.content;
-  selectedFile.value.id = file.id;
-  selectedFile.value.seleced = false;
+  selectedFile.value = {
+    oneFileName: file.name,
+    strJson: file.content,
+    id: file.id, // ✅ 唯一标识
+    seleced: false,
+  };
 
-  // selectedFileArr.value.push(selectedFile.value);
+  // 去重判断：是否已经存在相同 id 的文件
+  const isAlreadySelected = selectedFileArr.value.some(
+    (item) => item.id === selectedFile.value.id
+  );
 
-  console.log(selectedFileArr.value);
+  if (!isAlreadySelected) {
+    selectedFileArr.value.push(selectedFile.value);
+    console.log("✅ 文件已添加到选中列表：", selectedFileArr.value);
+  } else {
+    console.log("⚠️ 文件已存在，未重复添加：", selectedFile.value.oneFileName);
+  }
 };
 
 // 开始垂直拖拽（编辑器和终端之间的拖拽）
@@ -499,6 +507,16 @@ onUnmounted(() => {
   height: 4vh;
   background-color: green;
   box-sizing: border-box;
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  align-items: center;
+  .tab-item {
+    height: 4vh;
+    line-height: 4vh;
+    display: inline-block;
+    background-color: pink;
+  }
 }
 
 .editor-content {

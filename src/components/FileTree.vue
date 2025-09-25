@@ -404,7 +404,7 @@ const handleClick = (treeItem) => {
     }
     clickTimer.value = null; //  清除定时器引用
     isDoubleClick.value = false; //  重置 isDoubleClick
-  }, 300);
+  }, 200);
 };
 
 // 处理双击
