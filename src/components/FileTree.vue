@@ -39,6 +39,7 @@
             @click="handleClick(treeItem)"
             @dblclick="handleDoubleClick(treeItem)"
             class="tree-node-name"
+            :class="selectedId === treeItem.id ? 'selected-css' : ''"
           >
             {{ treeItem.name }}
           </span>
@@ -55,7 +56,7 @@ import FileIcon from "@/components/FileIcon.vue";
 
 import Vue3TreeVue from "vue3-tree-vue";
 import "vue3-tree-vue/dist/style.css";
-import { v4 as uuidv4 } from 'uuid';
+import { v4 as uuidv4 } from "uuid";
 
 const items = ref([]);
 const emits = defineEmits(["fileSelected"]);
@@ -65,6 +66,8 @@ const selectedFileContent = ref("");
 const clickTimer = ref(null);
 const isDoubleClick = ref(false);
 const allFiles = ref([]);
+
+const selectedId = ref(null);
 
 // 选择文件夹
 const selectFolder = () => {
@@ -79,7 +82,7 @@ const selectFolder = () => {
 
       // 保存所有文件，用于后续懒加载
       allFiles.value = files;
-     
+
       console.log(files);
 
       // 只构建 vue-vscode 下的第一层结构（懒加载优化）
@@ -374,7 +377,7 @@ const buildFlatStructure = (paths) => {
         children: [],
         expanded: false,
         fullPath: "",
-         id: uuidv4(), // ✅ 每个节点唯一 ID，标准方式,
+        id: uuidv4(), // ✅ 每个节点唯一 ID，标准方式,
       };
       nodeMap.set(fileName, node);
     }
@@ -421,6 +424,8 @@ const onSingleClick = (item) => {
   console.log("单击:", item);
 
   if (item.type === "file" && item.file) {
+    selectedId.value = item.id;
+
     // 单击文件：读取文件内容
     selectedFileName.value = item.name;
     const file = item.file;
@@ -591,6 +596,7 @@ const onDoubleClick = (treeItem) => {
     // 双击文件：读取文件内容
     selectedFileName.value = treeItem.name;
     const file = treeItem.file;
+    selectedId.value = treeItem.id;
 
     const reader = new FileReader();
     reader.readAsText(file);
@@ -671,6 +677,11 @@ const onItemExpanded = (expandedItem) => {
   justify-content: center;
   margin-top: 50px;
 }
+
+.selected-css {
+  // background-color: pink;
+  border: 1px solid #007fd4 !important;
+}
 </style>
 
 <style lang="scss">
@@ -725,6 +736,7 @@ const onItemExpanded = (expandedItem) => {
       .tree-node-name {
         // background-color: red;
         padding-left: 40px;
+        border: 1px solid transparent;
       }
 
       // border:1px solid yellow;
@@ -783,6 +795,10 @@ const onItemExpanded = (expandedItem) => {
 
 .vue3-tree-vue .chevron-right {
   color: #b7b7b7;
+}
+
+.vue3-tree-vue .selected-tree-item {
+  background: transparent;
 }
 
 //scroll
