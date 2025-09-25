@@ -49,6 +49,7 @@
             ref="jsonComponents"
             :model-value="selectedFile.strJson"
             @update:model-value="handleChangeResponseJson"
+            :language="selectedFile.language"
           />
         </div>
 
@@ -130,6 +131,7 @@ const selectedFile = ref({
   strJson: "",
   selected: false,
   id: "",
+  language: ''
 });
 const selectedFileArr = ref([]);
 
@@ -159,11 +161,14 @@ const startLeftWidthVw = ref(0); //拖拽开始时，左侧面板的宽度
 const fileSelected = (file) => {
   console.log("File selected:", file);
 
+   const language = getFileLanguage(file.name);
+
   selectedFile.value = {
     oneFileName: file.name,
     strJson: file.content,
     id: file.id, // ✅ 唯一标识
     seleced: false,
+    language: language,
   };
 
   // 去重判断：是否已经存在相同 id 的文件
@@ -402,6 +407,39 @@ const openFileContent = () => {
 const handleChangeResponseJson = () => {
   // 返回内容值，根据业务增加
 };
+
+// 🧠 工具函数：根据文件名返回 Monaco Editor 对应的语言 mode
+function getFileLanguage(fileName) {
+  const ext = fileName.split('.').pop()?.toLowerCase(); // 获取文件后缀，如 'py', 'css', 'js'
+
+  const languageMap = {
+    // ✅ 常见文件后缀与 Monaco Editor 的 language mode 对照
+    js: 'javascript',
+    ts: 'typescript',
+    json: 'json',
+    html: 'html',
+    css: 'css',
+    scss: 'scss',
+    less: 'less',
+    py: 'python',
+    java: 'java',
+    cpp: 'cpp',
+    c: 'c',
+    go: 'go',
+    rust: 'rust',
+    php: 'php',
+    sql: 'sql',
+    md: 'markdown',
+    xml: 'xml',
+    yaml: 'yaml',
+    yml: 'yaml',
+    sh: 'shell',
+    bash: 'shell',
+    // 可继续扩展...
+  };
+
+  return languageMap[ext] || 'plaintext'; // 如果没匹配到，默认使用 plaintext（纯文本）
+}
 
 onMounted(() => {
   nextTick(() => {
