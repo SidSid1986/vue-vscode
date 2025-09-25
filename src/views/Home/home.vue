@@ -158,6 +158,7 @@ const startLeftWidthVw = ref(0); //拖拽开始时，左侧面板的宽度
 // 文件选择  ========
 const fileSelected = (file) => {
   console.log("File selected:", file);
+
   // oneFileName.value = file.name;
   // strJson.value = file.content;
   selectedFile.value.oneFileName = file.name;
@@ -165,7 +166,7 @@ const fileSelected = (file) => {
   selectedFile.value.id = file.id;
   selectedFile.value.seleced = false;
 
-  selectedFileArr.value.push(selectedFile.value);
+  // selectedFileArr.value.push(selectedFile.value);
 
   console.log(selectedFileArr.value);
 };

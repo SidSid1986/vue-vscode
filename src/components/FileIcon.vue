@@ -2,7 +2,7 @@
  * @Author: Sid Li
  * @Date: 2025-09-19 08:42:22
  * @LastEditors: Sid Li
- * @LastEditTime: 2025-09-22 08:50:56
+ * @LastEditTime: 2025-09-25 08:48:17
  * @FilePath: \vue-vscode-git\src\components\FileIcon.vue
  * @Description: 
 -->
@@ -33,7 +33,10 @@ const iconSrc = computed(() => {
         ? getIconForOpenFolder(props.fileName) ?? "default_folder_opened.svg"
         : getIconForFolder(props.fileName) ?? "default_folder.svg";
     } else {
+      console.log(props.fileName);
       iconName = getIconForFile(props.fileName) ?? "default_file.svg";
+
+      console.log("图标处理成功:", iconName)
     }
     return new URL(`/icons/${iconName}`, window.location.origin).href;
   } catch (error) {

@@ -21,18 +21,14 @@
       >
         <!-- 用 FileIcon 组件渲染图标 -->
         <template v-slot:item-prepend-icon="treeItem">
-          <div
-            class="file-icon-border"
+          <FileIcon
+            :fileName="treeItem.name || 'default_file'"
+            :fileType="treeItem.type || 'file'"
+            :isOpen="treeItem.expanded || false"
+            :size="20"
             @click="handleClick(treeItem)"
             @dblclick="handleDoubleClick(treeItem)"
-          >
-            <FileIcon
-              :fileName="treeItem.name || 'default_file'"
-              :fileType="treeItem.type || 'file'"
-              :isOpen="treeItem.expanded || false"
-              :size="20"
-            />
-          </div>
+          />
         </template>
         <template v-slot:item-name="treeItem">
           <span
@@ -55,7 +51,7 @@ import FileIcon from "@/components/FileIcon.vue";
 
 import Vue3TreeVue from "vue3-tree-vue";
 import "vue3-tree-vue/dist/style.css";
-import { v4 as uuidv4 } from 'uuid';
+import { all } from "axios";
 
 const items = ref([]);
 const emits = defineEmits(["fileSelected"]);
@@ -79,7 +75,6 @@ const selectFolder = () => {
 
       // 保存所有文件，用于后续懒加载
       allFiles.value = files;
-     
       console.log(files);
 
       // 只构建 vue-vscode 下的第一层结构（懒加载优化）
@@ -374,7 +369,7 @@ const buildFlatStructure = (paths) => {
         children: [],
         expanded: false,
         fullPath: "",
-         id: uuidv4(), // ✅ 每个节点唯一 ID，标准方式,
+        id: Date.now() + Math.random(),
       };
       nodeMap.set(fileName, node);
     }
@@ -517,8 +512,6 @@ const loadLazyChildrenForFolder = (folderItem) => {
   const childMap = new Map();
 
   subItems.forEach((file) => {
-    console.log(1111);
-    console.log(file);
     const relativePath = file.webkitRelativePath.slice(folderPathPrefix.length); // 去掉前缀，如 "App.vue" 或 "components/Button.vue"
 
     if (!relativePath) {
@@ -556,7 +549,7 @@ const loadLazyChildrenForFolder = (folderItem) => {
         children: [],
         expanded: false,
         fullPath: childFullPath,
-        id: uuidv4(), // ✅ 每个节点唯一 ID，标准方式
+        id: Date.now() + Math.random(),
       };
       childMap.set(nodeName, childNode);
     }
@@ -676,11 +669,14 @@ const onItemExpanded = (expandedItem) => {
 <style lang="scss">
 .tiny_horizontal_margin {
   height: 30px !important;
-  // border:1px solid red;
+  border:2px solid red;
+  width:100%;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  position: absolute;
+  left:-20px;
 }
 
 .norem-tree {
@@ -696,14 +692,14 @@ const onItemExpanded = (expandedItem) => {
   // }
 
   .tree-view-item {
-    // border: 1px solid yellow;
+    border: 1px solid yellow;
     position: relative !important;
     .chevron-right {
       display: inline-block;
       position: absolute;
-      top: 11px;
+      top: 8px;
       left: 6px;
-      // border: 1px solid red;
+      border: 1px solid red;
       // width: 20px;
     }
   }
@@ -724,7 +720,9 @@ const onItemExpanded = (expandedItem) => {
       position: relative;
       .tree-node-name {
         // background-color: red;
-        padding-left: 40px;
+        margin-left: 50px;
+        position: absolute;
+
       }
 
       // border:1px solid yellow;
@@ -735,27 +733,20 @@ const onItemExpanded = (expandedItem) => {
         margin-right: 6px;
       }
 
-      .file-icon-border {
-        width: 60px;
-        height: 30px;
+      .norem-file-icon {
+        width: 30px;
+        height: 20px;
         padding-left: 10px;
         // margin-right: 6px;
         // background-color: blue;
         z-index: 1000;
-        left: -10px;
+        left: 5px;
         position: absolute;
-        // border: 1px solid #ffffff;
-        display: flex;
-        flex-direction: row;
-        justify-content: flex-end;
-        align-items: center;
+        border: 2px solid #ffffff;
+       
       }
 
-      .norem-file-icon {
-        width: 20px;
-        height: 20px;
-        // border: 1px solid red;
-      }
+      
 
       // 文件名容器 - 自适应剩余宽度
       span {
