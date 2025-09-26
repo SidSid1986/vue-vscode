@@ -439,6 +439,7 @@ const onSingleClick = (item) => {
         name: selectedFileName.value,
         content: selectedFileContent.value,
         id: item.id,
+        selected: false,
       });
     };
 
@@ -606,8 +607,10 @@ const onDoubleClick = (treeItem) => {
       emits("fileSelected", {
         name: selectedFileName.value,
         content: selectedFileContent.value,
+        id: treeItem.id,
+        selected: true,
       });
-      // 你可以在这里额外执行双击的操作（比如打开编辑器）
+      //  可以在这里额外执行双击的操作
     };
 
     reader.onerror = () => {
@@ -754,7 +757,7 @@ const onItemExpanded = (expandedItem) => {
         // margin-right: 6px;
         // background-color: blue;
         z-index: 1000;
-        left: -10px;
+        left: -15px;
         position: absolute;
         // border: 1px solid #ffffff;
         display: flex;

@@ -40,16 +40,34 @@
       >
         <div class="code-tab">
           <div v-for="item in selectedFileArr" :key="item.id">
-            <span class="tab-item">{{ item.oneFileName }}</span>
+            <div
+              @click="tabClick(item)"
+              class="tab-item"
+              :class="
+                item.id == selectedId ? 'tab-selected' : 'tab-no-selected'
+              "
+            >
+              <span
+                :class="item.selected ? '' : 'text-selected'"
+                class="tab-text"
+                >{{ item.fileName }}</span
+              >
+              <i
+                class="iconfont icon-guanbi"
+                :class="
+                  item.id == selectedId ? 'icon-selected' : 'icon-no-selected'
+                "
+              ></i>
+            </div>
           </div>
         </div>
         <!-- 上方：代码展示区，高度动态变化 -->
         <div class="editor-content" :style="{ height: editorHeight }">
           <MonacoCom
             ref="jsonComponents"
-            :model-value="selectedFile.strJson"
+            :model-value="selectedJson"
             @update:model-value="handleChangeResponseJson"
-            :language="selectedFile.language"
+            :language="selectedLanguage"
           />
         </div>
 
@@ -121,18 +139,20 @@ const DYNAMIC_TOTAL_WIDTH_VW = 96.6;
 const previousLeftWidthVw = ref(15); // 默认值 15，万一从未记录过，也合理
 
 //  文件内容
-// const oneFileName = ref("");
+// const fileName = ref("");
 // const strJson = ref(
 //   "# Python 示例代码\nprint('Hello Python!')\nresult = 1 + 2\nprint('计算结果：', result)"
 // );
-
-const selectedFile = ref({
-  oneFileName: "",
-  strJson: "",
-  selected: false,
-  id: "",
-  language: ''
-});
+const selectedId = ref("");
+// const selectedFile = ref({
+//   fileName: "",
+//   strJson: "",
+//   selected: false,
+//   id: "",
+//   language: "",
+// });
+const selectedLanguage = ref("");
+const selectedJson = ref("");
 const selectedFileArr = ref([]);
 
 // 高度相关
@@ -161,26 +181,95 @@ const startLeftWidthVw = ref(0); //拖拽开始时，左侧面板的宽度
 const fileSelected = (file) => {
   console.log("File selected:", file);
 
-   const language = getFileLanguage(file.name);
+  selectedId.value = file.id;
+  selectedJson.value = file.content;
+  selectedLanguage.value = getFileLanguage(file.name);
 
-  selectedFile.value = {
-    oneFileName: file.name,
+  // 1. 获取语言
+  const language = getFileLanguage(file.name);
+
+  // 2. 构造新文件对象（但注意：我们可能不新增，而是更新已有的）
+  const newFile = {
+    fileName: file.name,
     strJson: file.content,
-    id: file.id, // ✅ 唯一标识
-    seleced: false,
+    id: file.id,
+    selected: file.selected,
     language: language,
   };
 
-  // 去重判断：是否已经存在相同 id 的文件
-  const isAlreadySelected = selectedFileArr.value.some(
-    (item) => item.id === selectedFile.value.id
+  // 3. 查找是否已存在相同 id 的文件
+  const existingIndex = selectedFileArr.value.findIndex(
+    (item) => item.id === newFile.id
   );
 
-  if (!isAlreadySelected) {
-    selectedFileArr.value.push(selectedFile.value);
-    console.log("✅ 文件已添加到选中列表：", selectedFileArr.value);
+  if (existingIndex !== -1) {
+    const existingFile = selectedFileArr.value[existingIndex];
+
+    console.log(
+      `🔍 已存在相同 id 的文件：${newFile.fileName}，当前选中状态：${existingFile.selected}，新传入状态：${newFile.selected}`
+    );
+
+    if (existingFile.selected === false && newFile.selected === true) {
+      // ✅ 情况：已存在项是预览态（false），但用户双击了它（true）→ 升级为正式选中
+      console.log(`🔄 将文件从预览态升级为正式选中：${newFile.fileName}`);
+
+      // 直接更新该索引的 selected 状态为 true，其他信息也可以同步更新（比如 content / language）
+      selectedFileArr.value[existingIndex] = {
+        ...existingFile,
+        strJson: newFile.strJson, // 确保内容最新
+        selected: true, // 升级为正式选中
+        language: language, // 确保语言正确
+      };
+
+      console.log("✅ 文件状态已升级为 selected: true（正式打开）");
+    } else {
+      // 其它情况，比如：
+      // - 已存在且 selected: true，又传入了 selected: true（双击同一个文件）
+      // - 或者已存在 selected: false，又传入了 selected: false（重复单击）
+      // 你可以选择更新内容，或者什么都不做
+
+      console.log(
+        `ℹ️ 文件已存在，且状态未发生变化或不符合升级条件，可选择更新内容。当前状态：${existingFile.selected}`
+      );
+
+      // 【可选】如果你希望无论如何都更新内容，可以取消下面注释：
+      // selectedFileArr.value[existingIndex] = newFile;
+    }
+
+    return; // 已处理 id 相同的情况，无需新增
+  }
+
+  // ===========================
+  // 4. 如果 id 不存在，则执行原来的 “添加逻辑”
+  // ===========================
+
+  // 4.1 【仅针对 selected: false 的文件】保证最多只有一个预览态
+  if (newFile.selected === false) {
+    const hasInactiveFile = selectedFileArr.value.some(
+      (item) => item.selected === false
+    );
+
+    if (hasInactiveFile) {
+      const inactiveIndex = selectedFileArr.value.findIndex(
+        (item) => item.selected === false
+      );
+      if (inactiveIndex !== -1) {
+        selectedFileArr.value.splice(inactiveIndex, 1); // 移除旧的未选中文件
+      }
+    }
+
+    selectedFileArr.value.push(newFile);
+    console.log(
+      "添加了一个 seleced: false 的文件（预览态）：",
+      newFile.fileName
+    );
   } else {
-    console.log("⚠️ 文件已存在，未重复添加：", selectedFile.value.oneFileName);
+    // 4.2 selected: true（双击 / 正式选中），直接添加，无限制
+    selectedFileArr.value.push(newFile);
+    console.log(
+      "添加了一个 seleced: true 的文件（正式选中）：",
+      newFile.fileName
+    );
   }
 };
 
@@ -408,37 +497,45 @@ const handleChangeResponseJson = () => {
   // 返回内容值，根据业务增加
 };
 
+const tabClick = (item) => {
+  console.log(item);
+  selectedId.value = item.id;
+  selectedJson.value = item.strJson;
+  selectedLanguage.value = getFileLanguage(item.fileName);
+};
+
 // 🧠 工具函数：根据文件名返回 Monaco Editor 对应的语言 mode
 function getFileLanguage(fileName) {
-  const ext = fileName.split('.').pop()?.toLowerCase(); // 获取文件后缀，如 'py', 'css', 'js'
+  console.log(fileName);
+  const ext = fileName.split(".").pop()?.toLowerCase(); // 获取文件后缀，如 'py', 'css', 'js'
 
   const languageMap = {
     // ✅ 常见文件后缀与 Monaco Editor 的 language mode 对照
-    js: 'javascript',
-    ts: 'typescript',
-    json: 'json',
-    html: 'html',
-    css: 'css',
-    scss: 'scss',
-    less: 'less',
-    py: 'python',
-    java: 'java',
-    cpp: 'cpp',
-    c: 'c',
-    go: 'go',
-    rust: 'rust',
-    php: 'php',
-    sql: 'sql',
-    md: 'markdown',
-    xml: 'xml',
-    yaml: 'yaml',
-    yml: 'yaml',
-    sh: 'shell',
-    bash: 'shell',
+    js: "javascript",
+    ts: "typescript",
+    json: "json",
+    html: "html",
+    css: "css",
+    scss: "scss",
+    less: "less",
+    py: "python",
+    java: "java",
+    cpp: "cpp",
+    c: "c",
+    go: "go",
+    rust: "rust",
+    php: "php",
+    sql: "sql",
+    md: "markdown",
+    xml: "xml",
+    yaml: "yaml",
+    yml: "yaml",
+    sh: "shell",
+    bash: "shell",
     // 可继续扩展...
   };
 
-  return languageMap[ext] || 'plaintext'; // 如果没匹配到，默认使用 plaintext（纯文本）
+  return languageMap[ext] || "plaintext"; // 如果没匹配到，默认使用 plaintext（纯文本）
 }
 
 onMounted(() => {
@@ -543,7 +640,7 @@ onUnmounted(() => {
 .code-tab {
   width: 100%;
   height: 4vh;
-  background-color: green;
+  background-color: #242526;
   box-sizing: border-box;
   display: flex;
   flex-direction: row;
@@ -552,8 +649,63 @@ onUnmounted(() => {
   .tab-item {
     height: 4vh;
     line-height: 4vh;
-    display: inline-block;
-    background-color: pink;
+
+    color: #ffffff;
+    cursor: pointer;
+    padding: 0 10px;
+    font-size: 16px;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    box-sizing: border-box;
+  }
+  .text-selected {
+    // color: red;
+    font-style: italic;
+  }
+  .tab-text {
+    // border: 1px solid red;
+    height: 3vh;
+    line-height: 3vh;
+    margin: 0px 5px;
+  }
+  .tab-selected {
+    background-color: #292a2b;
+    border-bottom: 1px solid #19f9d8;
+    color: #19f9d8;
+  }
+
+  .tab-no-selected {
+    background-color: #222223;
+  }
+
+  .icon-selected {
+    color: #19f9d8;
+    font-size: 12px;
+    border: 1px solid #292a2b;
+    height: 2vh;
+    width: 2vh;
+    text-align: center;
+    line-height: 2vh;
+  }
+  .icon-selected:hover {
+    border: 1px solid #ffffff;
+  }
+
+  .icon-no-selected {
+    color: #222223;
+    font-size: 12px;
+    border: 1px solid #222223;
+    height: 2vh;
+    width: 2vh;
+    text-align: center;
+    line-height: 2vh;
+  }
+
+  .icon-no-selected:hover {
+    color: #ffffff;
+    border: 1px solid #ffffff;
   }
 }
 
