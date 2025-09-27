@@ -42,6 +42,7 @@
           <div v-for="item in selectedFileArr" :key="item.id">
             <div
               @click="tabClick(item)"
+              @dblclick="tabDoubleClick(item)"
               class="tab-item"
               :class="
                 item.id == selectedId ? 'tab-selected' : 'tab-no-selected'
@@ -177,6 +178,9 @@ const isHorizontalDragging = ref(false);
 const startX = ref(0); //鼠标按下时的 X 坐标
 const startLeftWidthVw = ref(0); //拖拽开始时，左侧面板的宽度
 
+const isDoubleClick = ref(false);
+const clickTimer = ref(null);
+
 // 文件选择  ========
 const fileSelected = (file) => {
   console.log("File selected:", file);
@@ -232,7 +236,7 @@ const fileSelected = (file) => {
         `ℹ️ 文件已存在，且状态未发生变化或不符合升级条件，可选择更新内容。当前状态：${existingFile.selected}`
       );
 
-      // 【可选】如果你希望无论如何都更新内容，可以取消下面注释：
+      // 如果无论如何都更新内容，可以取消下面注释：
       // selectedFileArr.value[existingIndex] = newFile;
     }
 
@@ -496,12 +500,66 @@ const openFileContent = () => {
 const handleChangeResponseJson = () => {
   // 返回内容值，根据业务增加
 };
-
+//tab 单击函数
 const tabClick = (item) => {
+  if (isDoubleClick.value) {
+    // 如果是双击，则忽略单击
+    isDoubleClick.value = false; //  重置 isDoubleClick
+    clearTimeout(clickTimer.value); //  清除残留的定时器
+    return;
+  }
+  // 300ms 后判断是否是双击
+  clickTimer.value = setTimeout(() => {
+    if (!isDoubleClick.value) {
+      // 300ms 内没有第二次点击，执行单击逻辑
+      onSingleClick(item);
+    }
+    clickTimer.value = null; //  清除定时器引用
+    isDoubleClick.value = false; //  重置 isDoubleClick
+  }, 200);
+};
+
+//处理单击
+const onSingleClick = (item) => {
   console.log(item);
   selectedId.value = item.id;
   selectedJson.value = item.strJson;
   selectedLanguage.value = getFileLanguage(item.fileName);
+};
+
+//双击函数
+const tabDoubleClick = (item) => {
+  clearTimeout(clickTimer.value); // 清除单击的定时器
+  isDoubleClick.value = true; // 标记为双击
+  onDoubleClick(item); // 执行双击逻辑
+
+  //  双击后，确保下一次单击能正常执行
+  setTimeout(() => {
+    isDoubleClick.value = false; // 300ms 后重置 isDoubleClick
+  }, 300);
+};
+
+//处理双击
+const onDoubleClick = (item) => {
+  console.log("双击:", item);
+
+  //更新item.id 对象的seleted 状态为 true
+  const existingIndex = selectedFileArr.value.findIndex(
+    (file) => file.id === item.id
+  );
+  const existingFile = selectedFileArr.value[existingIndex];
+  const newFile = { ...existingFile };
+  const language = getFileLanguage(item.fileName);
+
+  // 直接更新该索引的 selected 状态为 true，其他信息也可以同步更新（比如 content / language）
+  selectedFileArr.value[existingIndex] = {
+    ...existingFile,
+    strJson: newFile.strJson, // 确保内容最新
+    selected: true, // 升级为正式选中
+    language: language, // 确保语言正确
+  };
+
+  console.log("文件状态已升级为 selected: true（正式打开）");
 };
 
 // 🧠 工具函数：根据文件名返回 Monaco Editor 对应的语言 mode
