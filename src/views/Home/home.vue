@@ -38,7 +38,7 @@
         ref="codeContentRef"
         :style="{ width: rightPanelWidth }"
       >
-        <div class="code-tab">
+        <div class="code-tab" :class="isEmpty ? 'tab-empty' : ''">
           <div v-for="item in selectedFileArr" :key="item.id">
             <div
               @click="tabClick(item)"
@@ -54,6 +54,7 @@
                 >{{ item.fileName }}</span
               >
               <i
+                @click.stop="closeFile(item)"
                 class="iconfont icon-guanbi"
                 :class="
                   item.id == selectedId ? 'icon-selected' : 'icon-no-selected'
@@ -64,7 +65,10 @@
         </div>
         <!-- 上方：代码展示区，高度动态变化 -->
         <div class="editor-content" :style="{ height: editorHeight }">
+          <div v-if="isEmpty" class="empty">选择文件夹</div>
+
           <MonacoCom
+            v-if="!isEmpty"
             ref="jsonComponents"
             :model-value="selectedJson"
             @update:model-value="handleChangeResponseJson"
@@ -92,16 +96,17 @@
     </div>
 
     <!-- ✅ 3. 新增：底部工具栏：蓝色，固定 30px -->
-    <div class="global-status-bar">🧩 底部工具栏</div>
+    <div class="global-status-bar">🧩 底部工具栏 --{{ editorHeight }}</div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted, nextTick, computed } from "vue";
+import { ref, onMounted, onUnmounted, nextTick, computed, watch } from "vue";
 import FileTree from "@/components/FileTree.vue";
 import MonacoCom from "@/components/MonacoCom.vue";
 import Terminal from "@/components/Terminal.vue";
 import ToolMenu from "@/components/ToolMenu.vue";
+import { close } from "element-plus/es/components/notification/src/notify.mjs";
 
 const menuData = [
   {
@@ -180,6 +185,21 @@ const startLeftWidthVw = ref(0); //拖拽开始时，左侧面板的宽度
 
 const isDoubleClick = ref(false);
 const clickTimer = ref(null);
+
+const isEmpty = ref(true);
+
+watch(
+  () => selectedFileArr.value,
+  (newValue) => {
+    console.log("selectedFileArr.value:", newValue.length);
+    newValue.length == 0 ? (isEmpty.value = true) : (isEmpty.value = false);
+    console.log("isEmpty.value", isEmpty.value);
+  },
+  {
+    immediate: true,
+    deep: true,
+  }
+);
 
 // 文件选择  ========
 const fileSelected = (file) => {
@@ -562,6 +582,16 @@ const onDoubleClick = (item) => {
   console.log("文件状态已升级为 selected: true（正式打开）");
 };
 
+const closeFile = (item) => {
+  console.log("关闭文件:", item);
+  // 从 selectedFileArr 中移除该文件
+  selectedFileArr.value = selectedFileArr.value.filter(
+    (file) => file.id !== item.id
+  );
+
+  selectedJson.value = "";
+};
+
 // 🧠 工具函数：根据文件名返回 Monaco Editor 对应的语言 mode
 function getFileLanguage(fileName) {
   console.log(fileName);
@@ -700,6 +730,7 @@ onUnmounted(() => {
   width: 100%;
   height: 4vh;
   background-color: #242526;
+
   box-sizing: border-box;
   display: flex;
   flex-direction: row;
@@ -775,13 +806,22 @@ onUnmounted(() => {
   }
 }
 
+.tab-empty {
+  background-color: #292a2b;
+}
+
 .editor-content {
   width: 100%;
   height: 100%;
   overflow: auto;
   box-sizing: border-box;
-  background-color: #292a2b;
+  // background-color: #292a2b;
   // border: 2px solid green;
+  .empty {
+    background-color: #292a2b;
+    color: #ffffff;
+    height: 100%;
+  }
 }
 
 .drag-container-horizontal {
