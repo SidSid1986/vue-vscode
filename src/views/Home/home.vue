@@ -532,6 +532,7 @@ function getFileLanguage(fileName) {
     yml: "yaml",
     sh: "shell",
     bash: "shell",
+    vue: "html",
     // 可继续扩展...
   };
 
@@ -690,7 +691,9 @@ onUnmounted(() => {
     line-height: 2vh;
   }
   .icon-selected:hover {
-    border: 1px solid #ffffff;
+    // border: 1px solid #ffffff;
+    background-color: #383a3b;
+    border-radius: 8px;
   }
 
   .icon-no-selected {
@@ -703,9 +706,14 @@ onUnmounted(() => {
     line-height: 2vh;
   }
 
-  .icon-no-selected:hover {
+  .tab-item:hover .icon-no-selected {
     color: #ffffff;
-    border: 1px solid #ffffff;
+  }
+
+  .icon-no-selected:hover {
+    // border: 1px solid #ffffff;
+    background-color: #383a3b;
+    border-radius: 8px;
   }
 }
 

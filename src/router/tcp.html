@@ -1,0 +1,26 @@
+<html>
+<body>
+    <script src="https://js.puter.com/v2/"></script>
+    <script>
+    // 先测试公共服务（如echo服务器）
+    const socket = new puter.net.Socket("echo.puter.com", 7);
+    socket.on("open", () => {
+        console.log("连接成功，发送测试数据");
+        socket.write("测试消息\n"); // 发送测试数据到echo服务器
+    })
+    const decoder = new TextDecoder();
+    socket.on("data", (data) => {
+        console.log("收到响应:", decoder.decode(data));
+        puter.print("收到响应: " + decoder.decode(data), { code: true });
+    })
+    socket.on("error", (reason) => {
+        console.error("错误:", reason);
+        puter.print("错误: " + reason, { code: true });
+    })
+    socket.on("close", (hadError)=> {
+        console.log("连接关闭，是否有错误?", hadError);
+        puter.print("连接关闭，是否有错误? " + hadError, { code: true });
+    })
+    </script>
+</body>
+</html>

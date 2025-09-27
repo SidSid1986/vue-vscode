@@ -2,8 +2,8 @@
  * @Author: Sid Li
  * @Date: 2025-08-06 17:13:35
  * @LastEditors: Sid Li
- * @LastEditTime: 2025-09-18 13:40:55
- * @FilePath: \vue-Monaco-Editor\src\router\index.js
+ * @LastEditTime: 2025-09-26 11:29:42
+ * @FilePath: \vue-vscode-git\src\router\index.js
  * @Description:
  */
 import { createWebHashHistory, createRouter } from "vue-router";
@@ -21,6 +21,13 @@ const routes = [
     path: "/home",
     name: "Home",
     component: () => import("@/views/Home/home.vue"),
+    meta: { requiresRole: 2 },
+  },
+
+   {
+    path: "/tcp",
+    name: "TCP",
+    component: () => import("@/views/Home/tcp.vue"),
     meta: { requiresRole: 2 },
   },
 

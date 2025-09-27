@@ -2,8 +2,8 @@
  * @Author: Sid Li
  * @Date: 2025-08-08 10:28:51
  * @LastEditors: Sid Li
- * @LastEditTime: 2025-09-18 15:48:35
- * @FilePath: \vue-Monaco-Editor\vite.config.js
+ * @LastEditTime: 2025-09-26 15:28:16
+ * @FilePath: \vue-vscode-git\vite.config.js
  * @Description:
  */
 import { defineConfig, loadEnv } from "vite";
@@ -81,6 +81,7 @@ export default ({ mode }) => {
         features: ["contextmenu", "find", "format", "hover"],
         languages: ["python", "javascript", "json"],
       }),
+
       // ViteMonacoPlugin({
       //   // languageWorkers: ["javascript", "json"],
       // }),
