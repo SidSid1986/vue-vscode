@@ -95,6 +95,8 @@ const selectFolder = () => {
   input.click();
 };
 
+//选择文件
+
 // 构建树结构：动态识别第一层目录，只构建该目录下的第一层子节点（如 public、src、views、main.js）
 const buildTreeStructure = (files) => {
   console.log(files);
@@ -655,6 +657,10 @@ const onItemExpanded = (expandedItem) => {
   //   isDoubleClick.value = false; //  重置 isDoubleClick
   // }, 300);
 };
+
+defineExpose({
+  selectFolder,
+});
 </script>
 
 <style scoped lang="scss">

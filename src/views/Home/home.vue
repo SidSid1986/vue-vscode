@@ -5,7 +5,7 @@
     <div class="global-toolbar">
       <!-- 顶部工具栏{{ leftPanelWidth }}--{{ rightPanelWidth }} -->
       <!-- <ToolMenu :menuData="menuData" /> -->
-      <ToolMenu />
+      <ToolMenu @meneSelected="meneSelected" />
     </div>
 
     <!--  container（占满剩余所有高度） -->
@@ -22,7 +22,7 @@
         ref="fileContentRef"
         :style="{ width: leftPanelWidth }"
       >
-        <FileTree @fileSelected="fileSelected" />
+        <FileTree @fileSelected="fileSelected" ref="fileTreeRef" />
       </div>
 
       <!--  左右拖拽手柄 -->
@@ -65,7 +65,7 @@
         </div>
         <!-- 上方：代码展示区，高度动态变化 -->
         <div class="editor-content" :style="{ height: editorHeight }">
-          <div v-if="isEmpty" class="empty">选择文件夹</div>
+          <div v-if="isEmpty" class="empty">empty</div>
 
           <MonacoCom
             v-if="!isEmpty"
@@ -106,7 +106,7 @@ import FileTree from "@/components/FileTree.vue";
 import MonacoCom from "@/components/MonacoCom.vue";
 import Terminal from "@/components/Terminal.vue";
 import ToolMenu from "@/components/ToolMenu.vue";
-import { close } from "element-plus/es/components/notification/src/notify.mjs";
+import { v4 as uuidv4 } from "uuid";
 
 const menuData = [
   {
@@ -187,6 +187,10 @@ const isDoubleClick = ref(false);
 const clickTimer = ref(null);
 
 const isEmpty = ref(true);
+
+const fileTreeRef = ref(null);
+
+const selectedFileContent = ref("");
 
 watch(
   () => selectedFileArr.value,
@@ -589,11 +593,95 @@ const closeFile = (item) => {
     (file) => file.id !== item.id
   );
 
-  selectedJson.value = "";
+  let tempFile = selectedFileArr.value[0];
+  if (tempFile) {
+    selectedId.value = tempFile.id;
+    selectedJson.value = tempFile.strJson;
+    selectedLanguage.value = tempFile.language;
+  }
 };
 
-// 🧠 工具函数：根据文件名返回 Monaco Editor 对应的语言 mode
-function getFileLanguage(fileName) {
+// 选择文件（支持多选）
+const selectFiles = () => {
+  const input = document.createElement("input");
+  input.type = "file";
+  input.multiple = true; // 允许多选
+
+  input.onchange = async (e) => {
+    const target = e.target;
+    if (!target || !target.files) return;
+
+    const files = Array.from(target.files);
+    console.log(`总共选择了 ${files.length} 个文件`);
+
+    // 清空旧的文件列表（可选）
+    selectedFileArr.value = [];
+
+    // 遍历每个文件，读取内容并构造对象
+    for (const file of files) {
+      const id = uuidv4(); // 为每个文件生成唯一ID
+      console.log(`正在读取文件: ${file.name}`);
+
+      const fileObj = {
+        id: id,
+        fileName: file.name,
+        strJson: "", // 先占位，稍后通过 FileReader 填充
+        language: getFileLanguage(file.name), // 你自己的方法，根据扩展名返回语言类型
+        file: file, // 原始 File 对象，可选，如果你后续还要用
+      };
+
+      // 用 FileReader 读取文本内容
+      const reader = new FileReader();
+      reader.readAsText(file);
+
+      // 等待这个文件读取完毕
+      await new Promise((resolve, reject) => {
+        reader.onload = (event) => {
+          fileObj.strJson = event.target.result; // 读取到的文本内容
+          console.log(
+            `✅ 文件 "${file.name}" 读取成功，内容长度：`,
+            fileObj.strJson.length
+          );
+          resolve();
+        };
+        reader.onerror = (error) => {
+          console.error(`❌ 文件 "${file.name}" 读取失败:`, error);
+          fileObj.strJson = ""; // 出错时内容为空
+          resolve(); // 也要 resolve，否则会卡住
+        };
+      });
+
+      // 将该文件对象加入列表
+      selectedFileArr.value.push(fileObj);
+    }
+
+    console.log("  所有选择的文件已加载：", selectedFileArr.value);
+
+    if (selectedFileArr.value.length > 0) {
+      selectedLanguage.value = getFileLanguage(
+        selectedFileArr.value[0].fileName
+      );
+      selectedJson.value = selectedFileArr.value[0].strJson;
+    }
+  };
+
+  input.click(); // 打开文件选择对话框
+};
+
+const meneSelected = (item) => {
+  console.log(item.id);
+  if (item.id == 11) {
+    console.log(fileTreeRef.value);
+    fileTreeRef.value.selectFolder();
+  }
+
+  if (item.id == 12) {
+    selectFiles();
+  }
+};
+
+//   工具函数：根据文件名返回 Monaco Editor 对应的语言 mode
+const getFileLanguage = (fileName) => {
   console.log(fileName);
   const ext = fileName.split(".").pop()?.toLowerCase(); // 获取文件后缀，如 'py', 'css', 'js'
 
@@ -625,7 +713,7 @@ function getFileLanguage(fileName) {
   };
 
   return languageMap[ext] || "plaintext"; // 如果没匹配到，默认使用 plaintext（纯文本）
-}
+};
 
 onMounted(() => {
   nextTick(() => {

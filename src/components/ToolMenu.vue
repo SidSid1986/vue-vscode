@@ -2,7 +2,7 @@
  * @Author: Sid Li
  * @Date: 2025-09-24 09:32:39
  * @LastEditors: Sid Li
- * @LastEditTime: 2025-09-24 13:56:10
+ * @LastEditTime: 2025-09-27 13:50:49
  * @FilePath: \vue-vscode-git\src\components\ToolMenu.vue
  * @Description: 
 -->
@@ -20,7 +20,9 @@
 
       <div v-if="activeMenuId === item.id" class="menu-child-content">
         <div class="menu-child" v-for="child in item.children" :key="child.id">
-          <span class="menu-child-name">{{ child.name }}</span>
+          <span @click="selectMenu(child)" class="menu-child-name">{{
+            child.name
+          }}</span>
         </div>
       </div>
     </div>
@@ -29,6 +31,7 @@
 
 <script setup>
 import { ref, onMounted, onUnmounted } from "vue";
+const emits = defineEmits(["meneSelected"]);
 
 const menuContainerRef = ref(null);
 
@@ -116,6 +119,15 @@ const handleClickOutside = (event) => {
     activeMenuId.value = null; // 关闭当前菜单
   }
 };
+
+const selectMenu = (item) => {
+  console.log(item);
+  activeMenuId.value = null;
+  emits("meneSelected", {
+    id: item.id,
+  });
+};
+
 
 onMounted(() => {
   document.addEventListener("click", handleClickOutside);
